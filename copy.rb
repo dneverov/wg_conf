@@ -1,3 +1,5 @@
+# TODO: Read from config file
+
 # Config
 SOURCE_DIR = '~/Downloads'
 TARGET_DIR = '~/Downloads/1'
@@ -19,15 +21,22 @@ def rename(file)
   )
 end
 
+def system_copy(source_path, target_path)
+  system('sudo', 'cp', source_path, target_path)
+end
+
+def show_instruction(file)
+  base_name = File.basename(file, ".*")
+  puts 'To run the new configuration:'
+  puts "  sudo systemctl start awg-quick@#{base_name}.service"
+end
+
 # 1. Check that a file name is sent
 if ARGV.empty?
   puts "Error: Needs a file name!"
   puts "E.g.: ruby copy.rb SerbiaBelgradeS3.conf"
   exit
 end
-
-source_dir = expand_path(SOURCE_DIR)
-target_dir = expand_path(TARGET_DIR)
 
 # 2. Get the file name
 file_name = ARGV[0]
@@ -37,6 +46,9 @@ puts "file_name: #{file_name}"
 puts "new_name:  #{new_name}"
 
 # abort("Hold on for now")
+
+source_dir = expand_path(SOURCE_DIR)
+target_dir = expand_path(TARGET_DIR)
 
 # 3. Set paths
 source_path = "#{source_dir}/#{file_name}"
@@ -51,10 +63,11 @@ end
 puts "Attempting to copy #{file_name} to system folder..."
 
 # 4. Call cp via sudo
-result = system('sudo', 'cp', source_path, target_path)
+result = system_copy(source_path, target_path)
 
 if result
   puts "Done! The file has been copied to #{target_path}"
+  show_instruction(new_name)
 else
   puts "Failed to copy file. The sudo password may be incorrect."
 end
