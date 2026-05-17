@@ -1,7 +1,7 @@
 # Config
 SOURCE_DIR = '~/Downloads'
 TARGET_DIR = '~/Downloads/1'
-# Remname pattern
+# Rename pattern
 RENAME_PATTERN = 'wg2_%.3s_%.3s_%s.conf'
 
 def expand_path(path)
@@ -48,13 +48,13 @@ unless File.exist?(source_path)
   exit
 end
 
-puts "Попытка скопировать #{file_name} в системную папку..."
+puts "Attempting to copy #{file_name} to system folder..."
 
 # 4. Call cp via sudo
 result = system('sudo', 'cp', source_path, target_path)
 
 if result
-  puts "Готово! Файл скопирован в #{target_path}"
+  puts "Done! The file has been copied to #{target_path}"
 else
-  puts "Не удалось скопировать файл. Возможно, неверный пароль sudo."
+  puts "Failed to copy file. The sudo password may be incorrect."
 end
