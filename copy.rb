@@ -1,4 +1,4 @@
-require_relative 'lib/utils'
+require_relative 'lib/copier'
 
 # 1. Check that a file name is sent
 if ARGV.empty?
@@ -16,4 +16,5 @@ puts "new_name:  #{new_name}"
 
 # abort("Hold on for now")
 
-copy_config_file(file_name, new_name, instruction: true)
+copier = Copier.new
+copier.copy_config_file(file_name, new_name, instruction: true)
