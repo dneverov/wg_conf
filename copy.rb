@@ -1,8 +1,3 @@
-# TODO:
-# - Add shareable lib
-# - Gemfile
-# - Read from config file
-
 require_relative 'lib/utils'
 
 # 1. Check that a file name is sent
