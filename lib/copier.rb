@@ -12,23 +12,6 @@ class Copier
     @target_dir = expand_path(TARGET_DIR)
   end
 
-  def rename(file)
-    parts = File.basename(file).scan(/[A-Z][a-z]+|[A-Z]\d+/)
-
-    sprintf(
-      RENAME_PATTERN,
-      parts[0].downcase,
-      parts[1].downcase,
-      parts.last
-    )
-  end
-
-  def show_instruction(file)
-    base_name = File.basename(file, ".*")
-    puts 'To run the new configuration:'
-    puts "  sudo systemctl start awg-quick@#{base_name}.service"
-  end
-
   # The Main action
 
   def copy_config_file(source_file, target = nil, instruction: false)
@@ -63,6 +46,23 @@ class Copier
       File.expand_path(path)
     end
 
+    def rename(file)
+      parts = File.basename(file).scan(/[A-Z][a-z]+|[A-Z]\d+/)
+
+      sprintf(
+        RENAME_PATTERN,
+        parts[0].downcase,
+        parts[1].downcase,
+        parts.last
+      )
+    end
+
+    def show_instruction(file)
+      base_name = File.basename(file, ".*")
+      puts 'To run the new configuration:'
+      puts "  sudo systemctl start awg-quick@#{base_name}.service"
+    end
+  
     def system_copy(source_path, target_path)
       system('sudo', 'cp', source_path, target_path)
     end
