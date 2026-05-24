@@ -18,8 +18,8 @@ class Copier
     target_file = target || rename(source_file)
 
     # Set paths
-    source_path = "#{source_dir}/#{source_file}"
-    target_path = "#{target_dir}/#{target_file}"
+    source_path = set_path(source_dir, source_file)
+    target_path = set_path(target_dir, target_file)
 
     # Check that the source file exists
     unless File.exist?(source_path)
@@ -46,6 +46,10 @@ class Copier
       File.expand_path(path)
     end
 
+    def set_path(dir, file)
+      "#{dir}/#{file}"
+    end
+
     def rename(file)
       parts = File.basename(file).scan(/[A-Z][a-z]+|[A-Z]\d+/)
 
@@ -62,7 +66,7 @@ class Copier
       puts 'To run the new configuration:'
       puts "  sudo systemctl start awg-quick@#{base_name}.service"
     end
-  
+
     def system_copy(source_path, target_path)
       system('sudo', 'cp', source_path, target_path)
     end
