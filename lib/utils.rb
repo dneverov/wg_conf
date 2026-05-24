@@ -31,7 +31,7 @@ end
 
 # The Main action
 
-def copy_config_file(source_file, target = nil)
+def copy_config_file(source_file, target = nil, instruction: false)
   target_file = target || rename(source_file)
 
   source_dir = expand_path(SOURCE_DIR)
@@ -54,7 +54,7 @@ def copy_config_file(source_file, target = nil)
 
   if result
     puts "Done! The file has been copied to #{target_path}"
-    show_instruction(target_file)
+    show_instruction(target_file) if instruction
   else
     puts "Failed to copy file. The sudo password may be incorrect."
   end

@@ -23,3 +23,4 @@ ruby copy.rb SerbiaBelgradeS3.conf wg2_ser_bel_S3.conf
 - [x] Add shareable lib
 - [ ] Gemfile
 - [ ] Read from config file (+ add config.example)
+- [ ] Process files from `Dir`
