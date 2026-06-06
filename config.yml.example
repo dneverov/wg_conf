@@ -1,0 +1,3 @@
+config:
+  source_dir: ~/Downloads/amnezia_wg
+  target_dir: ~/Downloads/1
