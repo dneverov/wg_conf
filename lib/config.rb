@@ -2,28 +2,28 @@ require 'yaml'
 require 'fileutils'
 
 class Config
-  FILE_PATH    = 'config.yml'
-  EXAMPLE_PATH = 'config.yml.example'
-
-  # Если реального конфига нет, но есть шаблон — создаем его на лету
-  if !File.exist?(FILE_PATH) && File.exist?(EXAMPLE_PATH)
-    puts "Локальный #{FILE_PATH} не найден. Создаю из шаблона..."
-    FileUtils.cp(EXAMPLE_PATH, FILE_PATH)
-  end
-
-  # Если файла все еще нет (нет и шаблона) — выкидываем ошибку
-  raise "Файл конфигурации не найден: #{FILE_PATH}" unless File.exist?(FILE_PATH)
-
-  # Сразу загружаем данные при старте класса
-  DATA = YAML.load_file(FILE_PATH)
-
   class << self
     def source_dir
-      expand_path(DATA.dig('config', 'source_dir') || '')
+      expand_path(@data.dig('config', 'source_dir') || '')
     end
 
     def target_dir
-      expand_path(DATA.dig('config', 'target_dir') || '')
+      expand_path(@data.dig('config', 'target_dir') || '')
+    end
+
+    # Выносим инициализацию в метод класса, чтобы его можно было безопасно перезапускать
+    def load_data!
+      file_path = ENV['CONFIG_PATH'] || 'config.yml'
+      example_path = "#{file_path}.example"
+
+      if !File.exist?(file_path) && File.exist?(example_path)
+        puts "Локальный #{file_path} не найден. Создаю из шаблона..."
+        FileUtils.cp(example_path, file_path)
+      end
+
+      raise "Файл конфигурации не найден: #{file_path}" unless File.exist?(file_path)
+
+      @data = YAML.load_file(file_path)
     end
 
     private
@@ -33,4 +33,7 @@ class Config
         File.expand_path(path)
       end
   end
+
+  # Запускаем загрузку данных при первом чтении файла
+  load_data!
 end
