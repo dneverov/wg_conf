@@ -6,53 +6,60 @@ class Namer
   }
 
   # Rename pattern
-  RENAME_PATTERN = 'wg2_%.3s_%.3s_%s'
+  RENAME_PATTERN = 'wg2_%.3s_%.3s_%s.conf'
 
   def self.new_config_name(source_file)
     # Get [country_code, city_code, suffix]
     parts = Namer.extract_parts(source_file)
 
     # Склеиваем по шаблону с помощью оператора %
-    RENAME_PATTERN % parts
+    new_name = RENAME_PATTERN % parts
+
+    new_name.gsub('_.conf', '.conf')
   end
 
   # Returns [country_code, city_code, suffix]
   def self.extract_parts(source_file)
-    # 1. Разделяем CamelCase пробелами
-    formatted = source_file
+    # 1. Отрезаем расширение (работает с .conf, .txt и любыми другими)
+    clean_name = File.basename(source_file, ".*")
+
+    # 2. Разделяем CamelCase пробелами
+    formatted = clean_name
                   .gsub(/([A-Z]+)([A-Z][a-z])/, '\1 \2')
                   .gsub(/([a-z\d])([A-Z])/, '\1 \2')
     parts = formatted.split
 
-    # Фолбек на случай некорректного имени
-    return [source_file, "", ""] if parts.size < 3
+    return [clean_name, "", ""] if parts.size < 2
 
-    suffix = parts.last
+    # 3. Проверяем последнее слово. Если это суффикс вида S2, S3, S4:
+    if parts.last.match?(/^[A-Za-z]\d+$/)
+      suffix = parts.last
+      name_parts = parts[0...-1] # Страна и город — всё, кроме суффикса
+    else
+      suffix = "" # Суффикса нет (как в ChileSantiago)
+      name_parts = parts # Страна и город — это весь массив
+    end
+
     country_code = nil
     city_words = []
 
-    # 2. Проверяем составную страну (из двух слов)
-    first_two_joined = (parts[0..1] || []).join.downcase
+    # 4. Проверяем составную страну из двух слов
+    first_two_joined = (name_parts[0..1] || []).join.downcase
 
-    if COUNTRY_MAPPING.key?(first_two_joined)
+    if name_parts.size >= 2 && COUNTRY_MAPPING.key?(first_two_joined)
       country_code = COUNTRY_MAPPING[first_two_joined]
-      city_words = parts[2...-1]
+      city_words = name_parts[2..-1] || []
     else
-      # 3. Проверяем простую страну (одно слово)
-      first_word = parts.first.downcase
-
-      if COUNTRY_MAPPING.key?(first_word)
-        country_code = COUNTRY_MAPPING[first_word]
-      else
-        country_code = first_word
-      end
-
-      city_words = parts[1...-1]
+      # 5. Проверяем простую страну из одного слова
+      first_word = name_parts.first.downcase
+      country_code = COUNTRY_MAPPING[first_word] || first_word
+      city_words = name_parts[1..-1] || []
     end
 
-    # Собираем полное название города в нижнем регистре без пробелов
+    # Склеиваем слова города в нижний регистр
     city_code = city_words.join.downcase
 
+    # Возвращаем чистые компоненты
     [country_code, city_code, suffix]
   end
 end
