@@ -1,9 +1,8 @@
 class Copier
+  require_relative 'namer'
   # Config
   SOURCE_DIR = '~/Downloads/amnezia_wg2.0'
   TARGET_DIR = '~/Downloads/1'
-  # Rename pattern
-  RENAME_PATTERN = 'wg2_%.3s_%.3s_%s.conf'
 
   attr_reader :source_dir, :target_dir
 
@@ -15,7 +14,7 @@ class Copier
   # The Main action
 
   def copy_config_file(source_file, target = nil, instruction: false)
-    target_file = target || rename(source_file)
+    target_file = target || Namer.new_config_name(source_file)
 
     # Set paths
     source_path = set_path(source_dir, source_file)
@@ -48,17 +47,6 @@ class Copier
 
     def set_path(dir, file)
       "#{dir}/#{file}"
-    end
-
-    def rename(file)
-      parts = File.basename(file).scan(/[A-Z][a-z]+|[A-Z]\d+/)
-
-      sprintf(
-        RENAME_PATTERN,
-        parts[0].downcase,
-        parts[1].downcase,
-        parts.last
-      )
     end
 
     def show_instruction(file)
