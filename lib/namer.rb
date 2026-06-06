@@ -29,7 +29,7 @@ class Namer
                   .gsub(/([a-z\d])([A-Z])/, '\1 \2')
     parts = formatted.split
 
-    return [clean_name, "", ""] if parts.size < 2
+    return [clean_name.downcase, "", ""] if parts.size < 2
 
     # 3. Проверяем последнее слово. Если это суффикс вида S2, S3, S4:
     if parts.last.match?(/^[A-Za-z]\d+$/)
