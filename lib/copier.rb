@@ -1,14 +1,11 @@
 class Copier
   require_relative 'namer'
-  # Config
-  SOURCE_DIR = '~/Downloads/amnezia_wg2.0'
-  TARGET_DIR = '~/Downloads/1'
 
   attr_reader :source_dir, :target_dir
 
   def initialize
-    @source_dir = expand_path(SOURCE_DIR)
-    @target_dir = expand_path(TARGET_DIR)
+    @source_dir = Config.source_dir
+    @target_dir = Config.target_dir
   end
 
   # The Main action
@@ -40,10 +37,6 @@ class Copier
   end
 
   private
-
-    def expand_path(path)
-      File.expand_path(path)
-    end
 
     def set_path(dir, file)
       "#{dir}/#{file}"

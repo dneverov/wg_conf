@@ -33,5 +33,5 @@ ruby test/units/namer_test.rb -n test_country_not_in_mapping
 - [x] Add shareable lib
 - [ ] Gemfile
 - [x] Minitest
-- [ ] Read from config file (+ add config.example)
+- [x] Read from config file (+ add config.example)
 - [ ] Process files from `Dir`

@@ -1,3 +1,4 @@
+require_relative 'lib/config'
 require_relative 'lib/copier'
 
 # 1. Check that a file name is sent
@@ -14,7 +15,8 @@ new_name  = ARGV[1]
 puts "file_name: #{file_name}"
 puts "new_name:  #{new_name}"
 
-# abort("Hold on for now")
-
 copier = Copier.new
+
+# abort("\n\nHold on for now")
+
 copier.copy_config_file(file_name, new_name, instruction: true)
