@@ -1,5 +1,6 @@
 require 'fileutils'
 require_relative 'config'
+require_relative 'copier'
 
 class FileCopier
   class << self
@@ -12,10 +13,8 @@ class FileCopier
         raise "Ошибка синхронизации: Исходная папка не существует (#{source})"
       end
 
-      # Если целевой папки нет — создаем её на лету
       unless Dir.exist?(target)
-        puts "Целевая папка не найдена. Создаю: #{target}"
-        FileUtils.mkdir_p(target)
+        raise "Целевая папка не найдена (#{target})"
       end
 
       # 2. Поиск файлов (ищем .conf, .wg, .json файлы конфигураций)
@@ -28,13 +27,13 @@ class FileCopier
       end
 
       # 3. Процесс копирования
+      copier = Copier.new
       copied_count = 0
       files.each do |file_path|
         file_name = File.basename(file_path)
-        target_path = File.join(target, file_name)
 
-        # Копируем файл (FileUtils.cp перезапишет файл, если он уже есть)
-        FileUtils.cp(file_path, target_path)
+        # Копируем файл (перезапишет файл, если он уже есть)
+        copier.copy_config_file(file_name)
         puts "Скопирован: #{file_name} -> #{target}"
         copied_count += 1
       end
