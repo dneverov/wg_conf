@@ -10,7 +10,7 @@ class Copier
 
   # The Main action
 
-  def copy_config_file(source_file, target = nil, instruction: false)
+  def copy_config_file(source_file, target = nil, show_log: false, instruction: false)
     target_file = target || Namer.new_config_name(source_file)
 
     # Set paths
@@ -23,16 +23,16 @@ class Copier
       exit
     end
 
-    puts "Attempting to copy #{source_file} to system folder..."
+    puts "Attempting to copy #{source_file} to system folder..." if show_log
 
     # 4. Call cp via sudo
     result = system_copy(source_path, target_path)
 
     if result
-      puts "Done! The file has been copied to #{target_path}"
+      puts "Done! The file has been copied to #{target_path}" if show_log
       show_instruction(target_file) if instruction
     else
-      puts "Failed to copy file. The sudo password may be incorrect."
+      puts "Failed to copy file. The sudo password may be incorrect." if show_log
     end
   end
 

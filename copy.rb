@@ -19,4 +19,4 @@ copier = Copier.new
 
 # abort("\n\nHold on for now")
 
-copier.copy_config_file(file_name, new_name, instruction: true)
+copier.copy_config_file(file_name, new_name, show_log: true, instruction: true)
