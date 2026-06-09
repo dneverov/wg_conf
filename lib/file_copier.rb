@@ -33,8 +33,8 @@ class FileCopier
         file_name = File.basename(file_path)
 
         # Копируем файл (перезапишет файл, если он уже есть)
-        copier.copy_config_file(file_name)
-        puts "Скопирован: #{file_name} -> #{target}"
+        target_name = copier.rename_and_copy(file_name)
+        puts "Скопирован: #{file_name} -> #{target}/#{target_name}"
         copied_count += 1
       end
 
