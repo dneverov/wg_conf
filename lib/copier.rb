@@ -8,6 +8,10 @@ class Copier
     @target_dir = Config.target_dir
   end
 
+  def set_path(dir, file)
+    "#{dir}/#{file}"
+  end
+
   # The Main action
 
   def copy(source, target)
@@ -45,14 +49,10 @@ class Copier
 
   private
 
-    def set_path(dir, file)
-      "#{dir}/#{file}"
-    end
-
     def show_instruction(file)
       base_name = File.basename(file, ".*")
       puts "\nTo run the new configuration:"
-      puts "  sudo systemctl start awg-quick@#{base_name}.service\n"
+      puts "  sudo systemctl start awg-quick@#{base_name}.service\n\n"
     end
 
     def system_copy(source_path, target_path)
