@@ -40,7 +40,8 @@ ruby test/units/namer_test.rb -n test_country_not_in_mapping
 - [x] Add shareable lib
 - [ ] Gemfile (if needed)
 - [x] Minitest
-- [ ] Add `CopierTest`
+- [x] Add `CopierTest`
 - [x] Read from config file (+ add config.example)
 - [x] Process files from `Dir`
 - [x] Fix `FileCopier.sync!` log output
+- [ ] Add an utility for selecting VPN
