@@ -9,14 +9,12 @@ if ARGV.empty?
 end
 
 # 2. Get the file name
-file_name = ARGV[0]
-new_name  = ARGV[1]
-
-puts "file_name: #{file_name}"
-puts "new_name:  #{new_name}"
+source_name = ARGV[0]
+target_name  = ARGV[1]
 
 copier = Copier.new
 
 # abort("\n\nHold on for now")
+puts "Attempting to copy #{source_name} to system folder..."
 
-copier.copy_config_file(file_name, new_name, instruction: true)
+copier.copy_config_file(source_name, target_name, show_log: true, instruction: true)

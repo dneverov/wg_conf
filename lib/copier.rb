@@ -8,14 +8,16 @@ class Copier
     @target_dir = Config.target_dir
   end
 
+  def set_path(dir, file)
+    "#{dir}/#{file}"
+  end
+
   # The Main action
 
-  def copy_config_file(source_file, target = nil, instruction: false)
-    target_file = target || Namer.new_config_name(source_file)
-
+  def copy(source, target)
     # Set paths
-    source_path = set_path(source_dir, source_file)
-    target_path = set_path(target_dir, target_file)
+    source_path = set_path(source_dir, source)
+    target_path = set_path(target_dir, target)
 
     # Check that the source file exists
     unless File.exist?(source_path)
@@ -23,29 +25,34 @@ class Copier
       exit
     end
 
-    puts "Attempting to copy #{source_file} to system folder..."
+    # Call cp via sudo
+    system_copy(source_path, target_path)
+  end
 
-    # 4. Call cp via sudo
-    result = system_copy(source_path, target_path)
+  def rename_and_copy(source, target = nil)
+    target ||= Namer.new_config_name(source)
 
-    if result
-      puts "Done! The file has been copied to #{target_path}"
+    target if copy(source, target)
+  end
+
+  def copy_config_file(source, target = nil, show_log: false, instruction: false)
+    target_file = rename_and_copy(source, target)
+    target_path = set_path(target_dir, target_file)
+
+    if target_file
+      puts "Done! The file has been copied to #{target_path}" if show_log
       show_instruction(target_file) if instruction
     else
-      puts "Failed to copy file. The sudo password may be incorrect."
+      puts "Failed to copy file. The sudo password may be incorrect." if show_log
     end
   end
 
   private
 
-    def set_path(dir, file)
-      "#{dir}/#{file}"
-    end
-
     def show_instruction(file)
       base_name = File.basename(file, ".*")
-      puts 'To run the new configuration:'
-      puts "  sudo systemctl start awg-quick@#{base_name}.service"
+      puts "\nTo run the new configuration:"
+      puts "  sudo systemctl start awg-quick@#{base_name}.service\n\n"
     end
 
     def system_copy(source_path, target_path)
