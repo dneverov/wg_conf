@@ -2,6 +2,10 @@
 
 Copies Amnezia WG configuration files.
 
+## FYI
+
+For start or switch Amnezia WG config you can use [awg-switch](https://github.com/dneverov/awg-switch).
+
 ## How To Use:
 
 ### `copy.rb` -- Single config file
