@@ -1,10 +1,25 @@
 require 'fileutils'
+require 'date'
 require_relative 'config'
 require_relative 'copier'
 
 class FileCopier
   class << self
-    def sync!
+    require 'date'
+
+    def filter_files(files, period: 0)
+      # Если :all, сразу возвращаем файлы и выходим из метода
+      return files.select { |f| File.file?(f) } if period == :all
+
+      # Гарантированно создаем диапазон дат (для 0, 3, 10 и т.д.)
+      date_range = (Date.today - period)..Date.today
+
+      files.select do |file|
+        File.file?(file) && date_range.cover?(File.mtime(file).to_date)
+      end
+    end
+
+    def sync!(period_arg: "0")
       # 1. Валидация директорий
       source = Config.source_dir
       target = Config.target_dir
@@ -17,8 +32,10 @@ class FileCopier
         raise "Целевая папка не найдена (#{target})"
       end
 
+      # 1.1 Превращаем строку из консоли в правильный тип данных
+      period = period_arg == "all" ? :all : period_arg.to_i
+
       # 2. Поиск файлов (ищем .conf, .wg, .json файлы конфигураций)
-      # Если вам нужны абсолютно все файлы, можно использовать '*.*'
       files = Dir.glob(File.join(source, '*.{conf,wg,json,vpn}'))
 
       if files.empty?
@@ -26,10 +43,12 @@ class FileCopier
         return false
       end
 
+      recent_files = filter_files(files, period: period)
+
       # 3. Процесс копирования
       copier = Copier.new
       copied_count = 0
-      files.each do |file_path|
+      recent_files.each do |file_path|
         file_name = File.basename(file_path)
 
         # Копируем файл (перезапишет файл, если он уже есть)

@@ -1,5 +1,7 @@
-# main.rb или bin/sync
 require_relative 'lib/file_copier'
 
 puts "Запуск синхронизации конфигураций VPN..."
-FileCopier.sync!
+
+argument = ARGV[0] || "0"
+
+FileCopier.sync!(period_arg: argument)
