@@ -70,6 +70,73 @@ class FileCopierTest < Minitest::Test
     refute FileCopier.sync!, "Должен вернуть false, так как копировать нечего"
   end
 
+  # --- НОВЫЕ ТЕСТЫ ДЛЯ ПЕРИОДОВ ВРЕМЕНИ ---
+
+  def test_filters_files_by_period_today
+    # Создаем один сегодняшний файл и один старый (5 дней назад)
+    today_file = File.join(SRC_MOCK_DIR, 'ChileSantiago.conf')
+    old_file = File.join(SRC_MOCK_DIR, 'UnitedKingdomLondonS3.conf')
+
+    File.write(today_file, 'today')
+    File.write(old_file, 'old')
+
+    # Искусственно «старим» один файл на 5 дней назад
+    five_days_ago = Time.now - (5 * 24 * 60 * 60)
+    FileUtils.touch(old_file, mtime: five_days_ago)
+
+    # Запускаем для "0" (сегодня)
+    assert FileCopier.sync!(period_arg: "0")
+
+    # Сегодняшний должен скопироваться, старый — нет
+    assert File.exist?(File.join(TXT_MOCK_DIR, 'wg2_chi_san.conf'))
+    refute File.exist?(File.join(TXT_MOCK_DIR, 'wg2_UK_lon_S3.conf'))
+  end
+
+  def test_filters_files_by_period_integer_days
+    file_3_days_ago = File.join(SRC_MOCK_DIR, 'ChileSantiago.conf')
+    file_5_days_ago = File.join(SRC_MOCK_DIR, 'UnitedKingdomLondonS3.conf')
+
+    File.write(file_3_days_ago, '3 days')
+    File.write(file_5_days_ago, '5 days')
+
+    # Меняем время модификации файлов
+    FileUtils.touch(file_3_days_ago, mtime: Time.now - (3 * 24 * 60 * 60))
+    FileUtils.touch(file_5_days_ago, mtime: Time.now - (5 * 24 * 60 * 60))
+
+    # Ищем файлы за последние 4 дня
+    assert FileCopier.sync!(period_arg: "4")
+
+    # Файл 3-дневной давности копируется, 5-дневной — игнорируется
+    assert File.exist?(File.join(TXT_MOCK_DIR, 'wg2_chi_san.conf'))
+    refute File.exist?(File.join(TXT_MOCK_DIR, 'wg2_UK_lon_S3.conf'))
+  end
+
+  def test_copies_all_files_when_period_is_all
+    old_file = File.join(SRC_MOCK_DIR, 'ChileSantiago.conf')
+    File.write(old_file, 'old')
+    FileUtils.touch(old_file, mtime: Time.now - (100 * 24 * 60 * 60)) # 100 дней назад
+
+    # С параметром "all" дата не важна
+    assert FileCopier.sync!(period_arg: "all")
+    assert File.exist?(File.join(TXT_MOCK_DIR, 'wg2_chi_san.conf'))
+  end
+
+  def test_exits_with_error_on_invalid_period_argument
+    # Перехватываем системный вызов exit(1)
+    exception = assert_raises(SystemExit) do
+      # Отключаем вывод puts в поток $stdout на время теста, чтобы не мусорить в консоли
+      original_stdout = $stdout
+      $stdout = StringIO.new
+
+      FileCopier.sync!(period_arg: "invalid_param")
+    ensure
+      $stdout = original_stdout
+    end
+
+    # Проверяем, что статус завершения равен 1
+    assert_equal 1, exception.status
+  end
+
   private
 
   def write_test_config(src, target)
