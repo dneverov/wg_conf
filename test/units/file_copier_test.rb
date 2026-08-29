@@ -126,13 +126,7 @@ class FileCopierTest < Minitest::Test
   def test_exits_with_error_on_invalid_period_argument
     # Перехватываем системный вызов exit(1)
     exception = assert_raises(SystemExit) do
-      # Отключаем вывод puts в поток $stdout на время теста, чтобы не мусорить в консоли
-      original_stdout = $stdout
-      $stdout = StringIO.new
-
       execute_sync("invalid_param")
-    ensure
-      $stdout = original_stdout
     end
 
     # Проверяем, что статус завершения равен 1
