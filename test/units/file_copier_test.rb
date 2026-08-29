@@ -29,6 +29,8 @@ class FileCopierTest < Minitest::Test
     ENV.delete('CONFIG_PATH')
   end
 
+  # -- FileCopier.sync! --
+
   # --- ТЕСТЫ ---
 
   # TODO: Update also for supported types (without renaming)
@@ -39,7 +41,7 @@ class FileCopierTest < Minitest::Test
     File.write(File.join(SRC_MOCK_DIR, 'USANewYorkCityS2.png'), 'not a config') # Этот файл копироваться НЕ должен
 
     # 2. Запускаем метод синхронизации
-    assert FileCopier.sync!
+    assert execute_sync
 
     # 3. Проверяем, что нужные файлы скопировались, а лишние — нет
     assert File.exist?(File.join(TXT_MOCK_DIR, 'wg2_UK_lon_S3.conf'))
@@ -52,7 +54,7 @@ class FileCopierTest < Minitest::Test
     FileUtils.rm_rf(SRC_MOCK_DIR)
 
     assert_raises(RuntimeError) do
-      FileCopier.sync!
+      execute_sync
     end
   end
 
@@ -61,13 +63,13 @@ class FileCopierTest < Minitest::Test
     FileUtils.rm_rf(TXT_MOCK_DIR)
 
     assert_raises(RuntimeError) do
-      FileCopier.sync!
+      execute_sync
     end
   end
 
   def test_returns_false_if_no_files_found_to_copy
     # Оставляем исходную папку пустой
-    refute FileCopier.sync!, "Должен вернуть false, так как копировать нечего"
+    refute execute_sync, "Должен вернуть false, так как копировать нечего"
   end
 
   # --- НОВЫЕ ТЕСТЫ ДЛЯ ПЕРИОДОВ ВРЕМЕНИ ---
@@ -85,7 +87,7 @@ class FileCopierTest < Minitest::Test
     FileUtils.touch(old_file, mtime: five_days_ago)
 
     # Запускаем для "0" (сегодня)
-    assert FileCopier.sync!(period_arg: "0")
+    assert execute_sync("0")
 
     # Сегодняшний должен скопироваться, старый — нет
     assert File.exist?(File.join(TXT_MOCK_DIR, 'wg2_chi_san.conf'))
@@ -104,7 +106,7 @@ class FileCopierTest < Minitest::Test
     FileUtils.touch(file_5_days_ago, mtime: Time.now - (5 * 24 * 60 * 60))
 
     # Ищем файлы за последние 4 дня
-    assert FileCopier.sync!(period_arg: "4")
+    assert execute_sync("4")
 
     # Файл 3-дневной давности копируется, 5-дневной — игнорируется
     assert File.exist?(File.join(TXT_MOCK_DIR, 'wg2_chi_san.conf'))
@@ -117,7 +119,7 @@ class FileCopierTest < Minitest::Test
     FileUtils.touch(old_file, mtime: Time.now - (100 * 24 * 60 * 60)) # 100 дней назад
 
     # С параметром "all" дата не важна
-    assert FileCopier.sync!(period_arg: "all")
+    assert execute_sync("all")
     assert File.exist?(File.join(TXT_MOCK_DIR, 'wg2_chi_san.conf'))
   end
 
@@ -128,7 +130,7 @@ class FileCopierTest < Minitest::Test
       original_stdout = $stdout
       $stdout = StringIO.new
 
-      FileCopier.sync!(period_arg: "invalid_param")
+      execute_sync("invalid_param")
     ensure
       $stdout = original_stdout
     end
@@ -142,5 +144,18 @@ class FileCopierTest < Minitest::Test
     def write_test_config(src, target)
       hash = { 'config' => { 'source_dir' => src, 'target_dir' => target } }
       File.write(CONFIG_FILE, hash.to_yaml)
+    end
+
+    # A wrapper method for the `FileCopier.sync!`
+    def execute_sync(period_arg = "0")
+      # Перенаправляем стандартный вывод в "виртуальную строку"
+      original_stdout = $stdout
+      $stdout = StringIO.new
+
+      # Вызываем оригинальный метод и сохраняем его результат
+      FileCopier.sync!(period_arg: period_arg)
+    ensure
+      # Гарантированно возвращаем поток вывода системе, даже если sync! выбросит ошибку
+      $stdout = original_stdout
     end
 end
