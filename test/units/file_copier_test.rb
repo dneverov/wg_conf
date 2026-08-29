@@ -130,13 +130,16 @@ class FileCopierTest < Minitest::Test
     original_stdout = $stdout
 
     # Перехватываем системный вызов exit(1)
-    exception = assert_raises(SystemExit) do
+    begin
       $stdout = captured_stdout
-      FileCopier.sync!(period_arg: "invalid_param")
-    end
 
-    # Гарантированно возвращаем вывод обратно
-    $stdout = original_stdout
+      exception = assert_raises(SystemExit) do
+        FileCopier.sync!(period_arg: "invalid_param")
+      end
+    ensure
+      # Этот блок выполнится всегда: и при успехе, и при падении теста
+      $stdout = original_stdout
+    end
 
     # Проверяем и код завершения, и текст ошибки
     assert_equal 1, exception.status
