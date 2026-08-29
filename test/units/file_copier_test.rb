@@ -139,8 +139,8 @@ class FileCopierTest < Minitest::Test
 
   private
 
-  def write_test_config(src, target)
-    hash = { 'config' => { 'source_dir' => src, 'target_dir' => target } }
-    File.write(CONFIG_FILE, hash.to_yaml)
-  end
+    def write_test_config(src, target)
+      hash = { 'config' => { 'source_dir' => src, 'target_dir' => target } }
+      File.write(CONFIG_FILE, hash.to_yaml)
+    end
 end
