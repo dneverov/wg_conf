@@ -123,14 +123,25 @@ class FileCopierTest < Minitest::Test
     assert File.exist?(File.join(TXT_MOCK_DIR, 'wg2_chi_san.conf'))
   end
 
+  # Leave the original `FileCopier.sync!` to catch an error message
   def test_exits_with_error_on_invalid_period_argument
+    # Отключаем вывод puts в поток $stdout на время теста, чтобы не мусорить в консоли
+    captured_stdout = StringIO.new
+    original_stdout = $stdout
+
     # Перехватываем системный вызов exit(1)
     exception = assert_raises(SystemExit) do
-      execute_sync("invalid_param")
+      $stdout = captured_stdout
+      FileCopier.sync!(period_arg: "invalid_param")
     end
 
-    # Проверяем, что статус завершения равен 1
+    # Гарантированно возвращаем вывод обратно
+    $stdout = original_stdout
+
+    # Проверяем и код завершения, и текст ошибки
     assert_equal 1, exception.status
+    assert_match(/Ошибка: Неверный формат периода 'invalid_param'/, captured_stdout.string)
+    assert_match(/Используйте число дней/, captured_stdout.string)
   end
 
   private
