@@ -1,6 +1,13 @@
 require 'optparse'
 require_relative 'lib/file_copier'
 
+# Мягкое предупреждение вместо жесткого прерывания exit 1
+if Process.uid != 0
+  puts "Примечание: Скрипт запущен без прав суперпользователя."
+  puts "Если целевая папка защищена от записи, может потребоваться: sudo ruby dir.rb"
+  puts "-" * 40
+end
+
 # Значение по умолчанию
 options = { period: "0" }
 
