@@ -1,29 +1,15 @@
 require 'minitest/autorun'
 require 'fileutils'
 
-# Обычные заглушки для Config и Namer, чтобы не тянуть лишние зависимости
-class Config
-  class << self
-    attr_accessor :source_dir, :target_dir
-  end
-end
-
-class Namer
-  class << self
-    def new_config_name(source)
-      "mocked_#{source}"
-    end
-  end
-end
-
+require_relative '../../lib/config'
+require_relative '../../lib/namer'
 # Подключаем тестируемый класс
 require_relative '../../lib/copier'
 
 class CopierTest < Minitest::Test
   def setup
-    # Настраиваем фейковые пути для Config
-    Config.source_dir = '/mock/source'
-    Config.target_dir = '/mock/target'
+    # Подставляем заглушки
+    mock_classes!
 
     @copier = Copier.new
 
@@ -34,6 +20,9 @@ class CopierTest < Minitest::Test
 
   def teardown
     $stdout = @original_stdout
+
+    # Чистим за собой
+    restore_classes!
   end
 
   # --- ТЕСТЫ ---
@@ -129,4 +118,40 @@ class CopierTest < Minitest::Test
       end
     end
   end
+
+  private
+
+    # Хелпер для создания заглушки
+    def replace_method(klass, original_name, backup_name, &block)
+      klass.singleton_class.class_eval do
+        alias_method backup_name, original_name if method_defined?(original_name)
+        define_method(original_name, &block)
+      end
+    end
+
+    # Хелпер для восстановления оригинального метода
+    def restore_method(klass, original_name, backup_name)
+      klass.singleton_class.class_eval do
+        if method_defined?(backup_name)
+          remove_method original_name
+          alias_method original_name, backup_name
+          remove_method backup_name
+        end
+      end
+    end
+
+    # Безопасно сохраняем оригинальные методы и подставляем заглушки
+    def mock_classes!
+      replace_method(Config, :source_dir, :orig_source) { '/mock/source' }
+      replace_method(Config, :target_dir, :orig_target) { '/mock/target' }
+      replace_method(Namer, :new_config_name, :orig_name) { |source| "mocked_#{source}" }
+    end
+
+    # Возвращаем оригинальные методы на место, предварительно удаляя заглушки
+    # Добавляем remove_method, чтобы убрать варнинги "method redefined"
+    def restore_classes!
+      restore_method(Config, :source_dir, :orig_source)
+      restore_method(Config, :target_dir, :orig_target)
+      restore_method(Namer, :new_config_name, :orig_name)
+    end
 end
