@@ -5,8 +5,11 @@ require_relative 'lib/copier'
 if ARGV.empty?
   puts "Error: Needs a file name!"
   puts "E.g.:  ruby copy.rb SerbiaBelgradeS3.conf"
-  exit
+  exit 1
 end
+
+# Notification about `sudo`
+Config.check_root_privileges
 
 # 2. Get the file name
 source_name = ARGV[0]

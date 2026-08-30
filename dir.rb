@@ -1,6 +1,9 @@
 require 'optparse'
 require_relative 'lib/file_copier'
 
+# Мягкое предупреждение
+Config.check_root_privileges
+
 # Значение по умолчанию
 options = { period: "0" }
 
