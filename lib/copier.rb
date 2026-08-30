@@ -56,6 +56,6 @@ class Copier
     end
 
     def system_copy(source_path, target_path)
-      system('sudo', 'cp', source_path, target_path)
+      system('cp', source_path, target_path)
     end
 end
