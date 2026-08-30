@@ -1,29 +1,29 @@
 require 'minitest/autorun'
 require 'fileutils'
 
-# Обычные заглушки для Config и Namer, чтобы не тянуть лишние зависимости
-class Config
-  class << self
-    attr_accessor :source_dir, :target_dir
-  end
-end
-
-class Namer
-  class << self
-    def new_config_name(source)
-      "mocked_#{source}"
-    end
-  end
-end
-
+require_relative '../../lib/config'
+require_relative '../../lib/namer'
 # Подключаем тестируемый класс
 require_relative '../../lib/copier'
 
 class CopierTest < Minitest::Test
   def setup
-    # Настраиваем фейковые пути для Config
-    Config.source_dir = '/mock/source'
-    Config.target_dir = '/mock/target'
+    # 1. Безопасно сохраняем оригинальные методы и подставляем заглушки
+    Config.singleton_class.class_eval do
+      alias_method :original_source_dir, :source_dir if method_defined?(:source_dir)
+      alias_method :original_target_dir, :target_dir if method_defined?(:target_dir)
+
+      def source_dir; '/mock/source'; end
+      def target_dir; '/mock/target'; end
+    end
+
+    Namer.singleton_class.class_eval do
+      alias_method :original_new_config_name, :new_config_name if method_defined?(:new_config_name)
+
+      def new_config_name(source)
+        "mocked_#{source}"
+      end
+    end
 
     @copier = Copier.new
 
@@ -34,6 +34,28 @@ class CopierTest < Minitest::Test
 
   def teardown
     $stdout = @original_stdout
+
+    # Возвращаем оригинальные методы на место, предварительно удаляя заглушки
+    Config.singleton_class.class_eval do
+      if method_defined?(:original_source_dir)
+        remove_method :source_dir # Удаляем тестовую заглушку, чтобы избежать варнинга
+        alias_method :source_dir, :original_source_dir
+        remove_method :original_source_dir
+      end
+      if method_defined?(:original_target_dir)
+        remove_method :target_dir
+        alias_method :target_dir, :original_target_dir
+        remove_method :original_target_dir
+      end
+    end
+
+    Namer.singleton_class.class_eval do
+      if method_defined?(:original_new_config_name)
+        remove_method :new_config_name
+        alias_method :new_config_name, :original_new_config_name
+        remove_method :original_new_config_name
+      end
+    end
   end
 
   # --- ТЕСТЫ ---
