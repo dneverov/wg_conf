@@ -49,6 +49,18 @@ Or individual test:
 ruby test/units/namer_test.rb -n test_country_not_in_mapping
 ```
 
+### Using Rake:
+<!--
+- `rake` или `rake test` — запустит вообще все тесты (и юниты, и интеграционные)
+- `rake test:units` — запустит тесты только из папки `test/units/`
+- `rake test:integration` — запустит тесты только из папки `test/integration/`.
+-->
+
+- `rake` or `rake test` — will run all tests (both unit and integration)
+- `rake test:units` — will run tests only from the `test/units/` directory
+- `rake test:integration` — will run tests only from the `test/integration/`.
+
+
 ## TODO
 
 - [x] Add shareable lib
