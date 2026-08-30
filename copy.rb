@@ -8,6 +8,14 @@ if ARGV.empty?
   exit
 end
 
+# Мягкое предупреждение вместо жесткого прерывания exit 1
+if Process.uid != 0
+  script_name = File.basename($0)
+  puts "Примечание: Скрипт запущен без прав суперпользователя."
+  puts "Если целевая папка защищена от записи, может потребоваться: sudo ruby #{script_name}"
+  puts "-" * 40
+end
+
 # 2. Get the file name
 source_name = ARGV[0]
 target_name  = ARGV[1]
