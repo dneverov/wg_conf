@@ -8,22 +8,8 @@ require_relative '../../lib/copier'
 
 class CopierTest < Minitest::Test
   def setup
-    # 1. Безопасно сохраняем оригинальные методы и подставляем заглушки
-    Config.singleton_class.class_eval do
-      alias_method :original_source_dir, :source_dir if method_defined?(:source_dir)
-      alias_method :original_target_dir, :target_dir if method_defined?(:target_dir)
-
-      def source_dir; '/mock/source'; end
-      def target_dir; '/mock/target'; end
-    end
-
-    Namer.singleton_class.class_eval do
-      alias_method :original_new_config_name, :new_config_name if method_defined?(:new_config_name)
-
-      def new_config_name(source)
-        "mocked_#{source}"
-      end
-    end
+    # Подставляем заглушки
+    mock_classes!
 
     @copier = Copier.new
 
@@ -35,27 +21,8 @@ class CopierTest < Minitest::Test
   def teardown
     $stdout = @original_stdout
 
-    # Возвращаем оригинальные методы на место, предварительно удаляя заглушки
-    Config.singleton_class.class_eval do
-      if method_defined?(:original_source_dir)
-        remove_method :source_dir # Удаляем тестовую заглушку, чтобы избежать варнинга
-        alias_method :source_dir, :original_source_dir
-        remove_method :original_source_dir
-      end
-      if method_defined?(:original_target_dir)
-        remove_method :target_dir
-        alias_method :target_dir, :original_target_dir
-        remove_method :original_target_dir
-      end
-    end
-
-    Namer.singleton_class.class_eval do
-      if method_defined?(:original_new_config_name)
-        remove_method :new_config_name
-        alias_method :new_config_name, :original_new_config_name
-        remove_method :original_new_config_name
-      end
-    end
+    # Чистим за собой
+    restore_classes!
   end
 
   # --- ТЕСТЫ ---
@@ -151,4 +118,46 @@ class CopierTest < Minitest::Test
       end
     end
   end
+
+  private
+
+    # Безопасно сохраняем оригинальные методы и подставляем заглушки
+    def mock_classes!
+      Config.singleton_class.class_eval do
+        alias_method :orig_source, :source_dir if method_defined?(:source_dir)
+        alias_method :orig_target, :target_dir if method_defined?(:target_dir)
+        def source_dir; '/mock/source'; end
+        def target_dir; '/mock/target'; end
+      end
+
+      Namer.singleton_class.class_eval do
+        alias_method :orig_name, :new_config_name if method_defined?(:new_config_name)
+        def new_config_name(source); "mocked_#{source}"; end
+      end
+    end
+
+    # Возвращаем оригинальные методы на место, предварительно удаляя заглушки
+    # Добавляем remove_method, чтобы убрать варнинги "method redefined"
+    def restore_classes!
+      Config.singleton_class.class_eval do
+        if method_defined?(:orig_source)
+          remove_method :source_dir
+          alias_method :source_dir, :orig_source
+          remove_method :orig_source
+        end
+        if method_defined?(:orig_target)
+          remove_method :target_dir
+          alias_method :target_dir, :orig_target
+          remove_method :orig_target
+        end
+      end
+
+      Namer.singleton_class.class_eval do
+        if method_defined?(:orig_name)
+          remove_method :new_config_name
+          alias_method :new_config_name, :orig_name
+          remove_method :orig_name
+        end
+      end
+    end
 end
