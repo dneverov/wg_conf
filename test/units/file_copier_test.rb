@@ -29,6 +29,8 @@ class FileCopierTest < Minitest::Test
     ENV.delete('CONFIG_PATH')
   end
 
+  # -- FileCopier.sync! --
+
   # --- ТЕСТЫ ---
 
   # TODO: Update also for supported types (without renaming)
@@ -39,7 +41,7 @@ class FileCopierTest < Minitest::Test
     File.write(File.join(SRC_MOCK_DIR, 'USANewYorkCityS2.png'), 'not a config') # Этот файл копироваться НЕ должен
 
     # 2. Запускаем метод синхронизации
-    assert FileCopier.sync!
+    assert execute_sync
 
     # 3. Проверяем, что нужные файлы скопировались, а лишние — нет
     assert File.exist?(File.join(TXT_MOCK_DIR, 'wg2_UK_lon_S3.conf'))
@@ -52,7 +54,7 @@ class FileCopierTest < Minitest::Test
     FileUtils.rm_rf(SRC_MOCK_DIR)
 
     assert_raises(RuntimeError) do
-      FileCopier.sync!
+      execute_sync
     end
   end
 
@@ -61,19 +63,107 @@ class FileCopierTest < Minitest::Test
     FileUtils.rm_rf(TXT_MOCK_DIR)
 
     assert_raises(RuntimeError) do
-      FileCopier.sync!
+      execute_sync
     end
   end
 
   def test_returns_false_if_no_files_found_to_copy
     # Оставляем исходную папку пустой
-    refute FileCopier.sync!, "Должен вернуть false, так как копировать нечего"
+    refute execute_sync, "Должен вернуть false, так как копировать нечего"
+  end
+
+  # --- НОВЫЕ ТЕСТЫ ДЛЯ ПЕРИОДОВ ВРЕМЕНИ ---
+
+  def test_filters_files_by_period_today
+    # Создаем один сегодняшний файл и один старый (5 дней назад)
+    today_file = File.join(SRC_MOCK_DIR, 'ChileSantiago.conf')
+    old_file = File.join(SRC_MOCK_DIR, 'UnitedKingdomLondonS3.conf')
+
+    File.write(today_file, 'today')
+    File.write(old_file, 'old')
+
+    # Искусственно «старим» один файл на 5 дней назад
+    five_days_ago = Time.now - (5 * 24 * 60 * 60)
+    FileUtils.touch(old_file, mtime: five_days_ago)
+
+    # Запускаем для "0" (сегодня)
+    assert execute_sync("0")
+
+    # Сегодняшний должен скопироваться, старый — нет
+    assert File.exist?(File.join(TXT_MOCK_DIR, 'wg2_chi_san.conf'))
+    refute File.exist?(File.join(TXT_MOCK_DIR, 'wg2_UK_lon_S3.conf'))
+  end
+
+  def test_filters_files_by_period_integer_days
+    file_3_days_ago = File.join(SRC_MOCK_DIR, 'ChileSantiago.conf')
+    file_5_days_ago = File.join(SRC_MOCK_DIR, 'UnitedKingdomLondonS3.conf')
+
+    File.write(file_3_days_ago, '3 days')
+    File.write(file_5_days_ago, '5 days')
+
+    # Меняем время модификации файлов
+    FileUtils.touch(file_3_days_ago, mtime: Time.now - (3 * 24 * 60 * 60))
+    FileUtils.touch(file_5_days_ago, mtime: Time.now - (5 * 24 * 60 * 60))
+
+    # Ищем файлы за последние 4 дня
+    assert execute_sync("4")
+
+    # Файл 3-дневной давности копируется, 5-дневной — игнорируется
+    assert File.exist?(File.join(TXT_MOCK_DIR, 'wg2_chi_san.conf'))
+    refute File.exist?(File.join(TXT_MOCK_DIR, 'wg2_UK_lon_S3.conf'))
+  end
+
+  def test_copies_all_files_when_period_is_all
+    old_file = File.join(SRC_MOCK_DIR, 'ChileSantiago.conf')
+    File.write(old_file, 'old')
+    FileUtils.touch(old_file, mtime: Time.now - (100 * 24 * 60 * 60)) # 100 дней назад
+
+    # С параметром "all" дата не важна
+    assert execute_sync("all")
+    assert File.exist?(File.join(TXT_MOCK_DIR, 'wg2_chi_san.conf'))
+  end
+
+  # Leave the original `FileCopier.sync!` to catch an error message
+  def test_exits_with_error_on_invalid_period_argument
+    # Отключаем вывод puts в поток $stdout на время теста, чтобы не мусорить в консоли
+    captured_stdout = StringIO.new
+    original_stdout = $stdout
+
+    # Перехватываем системный вызов exit(1)
+    begin
+      $stdout = captured_stdout
+
+      exception = assert_raises(SystemExit) do
+        FileCopier.sync!(period_arg: "invalid_param")
+      end
+    ensure
+      # Этот блок выполнится всегда: и при успехе, и при падении теста
+      $stdout = original_stdout
+    end
+
+    # Проверяем и код завершения, и текст ошибки
+    assert_equal 1, exception.status
+    assert_match(/Ошибка: Неверный формат периода 'invalid_param'/, captured_stdout.string)
+    assert_match(/Используйте число дней/, captured_stdout.string)
   end
 
   private
 
-  def write_test_config(src, target)
-    hash = { 'config' => { 'source_dir' => src, 'target_dir' => target } }
-    File.write(CONFIG_FILE, hash.to_yaml)
-  end
+    def write_test_config(src, target)
+      hash = { 'config' => { 'source_dir' => src, 'target_dir' => target } }
+      File.write(CONFIG_FILE, hash.to_yaml)
+    end
+
+    # A wrapper method for the `FileCopier.sync!`
+    def execute_sync(period_arg = "0")
+      # Перенаправляем стандартный вывод в "виртуальную строку"
+      original_stdout = $stdout
+      $stdout = StringIO.new
+
+      # Вызываем оригинальный метод и сохраняем его результат
+      FileCopier.sync!(period_arg: period_arg)
+    ensure
+      # Гарантированно возвращаем поток вывода системе, даже если sync! выбросит ошибку
+      $stdout = original_stdout
+    end
 end
