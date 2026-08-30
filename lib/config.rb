@@ -26,6 +26,15 @@ class Config
       @data = YAML.load_file(file_path)
     end
 
+    # Мягкое предупреждение вместо жесткого прерывания exit 1
+    def check_root_privileges(script_name = File.basename($0))
+      return if Process.uid == 0
+
+      puts "Примечание: Скрипт запущен без прав суперпользователя."
+      puts "Если целевая папка защищена от записи, может потребоваться: sudo ruby #{script_name}"
+      puts "-" * 40
+    end
+
     private
 
       # File.expand_path автоматически превратит '~/' в '/home/user/'

@@ -5,16 +5,11 @@ require_relative 'lib/copier'
 if ARGV.empty?
   puts "Error: Needs a file name!"
   puts "E.g.:  ruby copy.rb SerbiaBelgradeS3.conf"
-  exit
+  exit 1
 end
 
-# Мягкое предупреждение вместо жесткого прерывания exit 1
-if Process.uid != 0
-  script_name = File.basename($0)
-  puts "Примечание: Скрипт запущен без прав суперпользователя."
-  puts "Если целевая папка защищена от записи, может потребоваться: sudo ruby #{script_name}"
-  puts "-" * 40
-end
+# Notification about `sudo`
+Config.check_root_privileges
 
 # 2. Get the file name
 source_name = ARGV[0]
