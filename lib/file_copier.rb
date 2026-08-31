@@ -36,17 +36,15 @@ class FileCopier
 
       # 3. Процесс копирования
       copier = Copier.new
-      copied_count = 0
       recent_files.each do |file_path|
         file_name = File.basename(file_path)
 
         # Копируем файл (перезапишет файл, если он уже есть)
         target_name = copier.rename_and_copy(file_name)
         puts "Скопирован: #{file_name} -> #{copier.set_path(target, target_name)}"
-        copied_count += 1
       end
 
-      puts "Успешно синхронизировано файлов: #{copied_count}."
+      puts "Успешно синхронизировано файлов: #{recent_files.size}."
       true
     end
 
