@@ -63,13 +63,8 @@ class FileCopier
         source = Config.source_dir
         target = Config.target_dir
 
-        unless Dir.exist?(source)
-          raise "Ошибка синхронизации: Исходная папка не существует (#{source})"
-        end
-
-        unless Dir.exist?(target)
-          raise "Целевая папка не найдена (#{target})"
-        end
+        raise "Исходная папка не существует (#{source})" unless Dir.exist?(source)
+        raise "Целевая папка не найдена (#{target})"     unless Dir.exist?(target)
 
         [source, target]
       end
