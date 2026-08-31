@@ -148,6 +148,8 @@ class FileCopierTest < Minitest::Test
   end
 
   def test_continues_copying_if_one_file_fails
+    # Симуляция. Сообщение об ошибке
+    error_message = "Диск переполнен или доступ запрещен"
     # 1. Создаем два фейковых файла в исходной папке
     good_file = 'ChileSantiago.conf'
     bad_file  = 'UnitedKingdomLondonS3.conf'
@@ -167,7 +169,7 @@ class FileCopierTest < Minitest::Test
       # Подменяем метод у конкретного живого объекта
       instance.define_singleton_method(:rename_and_copy) do |file_name|
         if file_name == bad_file
-          raise StandardError, "Диск переполнен или доступ запрещен"
+          raise StandardError, error_message
         else
           original_rename.call(file_name)
         end
@@ -192,7 +194,7 @@ class FileCopierTest < Minitest::Test
 
       # ПРОВЕРЯЕМ, что пользователю напечатался правильный текст ошибки
       assert_match(/Ошибка при копировании файла #{bad_file}/, output_text)
-      assert_match(/Диск переполнен или доступ запрещен/, output_text)
+      assert_match(/#{error_message}/, output_text)
 
       # Также проверяем, что об успехе тоже вывелась правильная информация
       assert_match(/Успешно синхронизировано файлов: 1 из 2/, output_text)
