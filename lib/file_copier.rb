@@ -5,20 +5,6 @@ require_relative 'copier'
 
 class FileCopier
   class << self
-    require 'date'
-
-    def filter_files(files, period: 0)
-      # Если :all, сразу возвращаем файлы и выходим из метода
-      return files.select { |f| File.file?(f) } if period == :all
-
-      # Гарантированно создаем диапазон дат (для 0, 3, 10 и т.д.)
-      date_range = (Date.today - period)..Date.today
-
-      files.select do |file|
-        File.file?(file) && date_range.cover?(File.mtime(file).to_date)
-      end
-    end
-
     def sync!(period_arg: "0")
       # 1. Валидация директорий и входных данных
       source, target = validate_directories!
@@ -56,6 +42,19 @@ class FileCopier
         end
 
         files
+      end
+
+      # Фильтрует массив файлов по дате
+      def filter_files(files, period: 0)
+        # Если :all, сразу возвращаем файлы и выходим из метода
+        return files.select { |f| File.file?(f) } if period == :all
+
+        # Гарантированно создаем диапазон дат (для 0, 3, 10 и т.д.)
+        date_range = (Date.today - period)..Date.today
+
+        files.select do |file|
+          File.file?(file) && date_range.cover?(File.mtime(file).to_date)
+        end
       end
 
       # Проверяем существование папок и возвращаем их пути кортежем
