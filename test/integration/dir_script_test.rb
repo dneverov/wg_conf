@@ -30,7 +30,7 @@ class DirScriptTest < Minitest::Test
     File.write(File.join(SRC_MOCK_DIR, 'ChileSantiago.conf'), 'dummy')
 
     # Запускаем скрипт без флагов в отдельном процессе
-    stdout, stderr, status = run_script
+    stdout, _, status = run_script
 
     assert status.success?, "Скрипт должен завершиться успешно"
     assert_match(/Запуск синхронизации конфигураций VPN.../, stdout)
@@ -43,7 +43,7 @@ class DirScriptTest < Minitest::Test
     FileUtils.touch(file, mtime: Time.now - (3 * 24 * 60 * 60))
 
     # Передаем ключ -p 3
-    stdout, _, status = run_script("-p", "3")
+    _, _, status = run_script("-p", "3")
 
     assert status.success?
     assert File.exist?(File.join(TXT_MOCK_DIR, 'wg2_chi_san.conf'))
@@ -55,7 +55,7 @@ class DirScriptTest < Minitest::Test
     FileUtils.touch(file, mtime: Time.now - (5 * 24 * 60 * 60))
 
     # Передаем ключ --period 5
-    stdout, _, status = run_script("--period", "5")
+    _, _, status = run_script("--period", "5")
 
     assert status.success?
     assert File.exist?(File.join(TXT_MOCK_DIR, 'wg2_chi_san.conf'))
@@ -63,7 +63,7 @@ class DirScriptTest < Minitest::Test
 
   def test_script_exits_with_error_on_invalid_argument
     # Передаем некорректный параметр через ключ
-    stdout, stderr, status = run_script("-p", "invalid_param")
+    stdout, _, status = run_script("-p", "invalid_param")
 
     refute status.success?, "Скрипт должен завершиться с ошибкой"
     assert_equal 1, status.exitstatus

@@ -147,6 +147,62 @@ class FileCopierTest < Minitest::Test
     assert_match(/Используйте число дней/, captured_stdout.string)
   end
 
+  def test_continues_copying_if_one_file_fails
+    # Симуляция. Сообщение об ошибке
+    error_message = "Диск переполнен или доступ запрещен"
+    # 1. Создаем два фейковых файла в исходной папке
+    good_file = 'ChileSantiago.conf'
+    bad_file  = 'UnitedKingdomLondonS3.conf'
+
+    File.write(File.join(SRC_MOCK_DIR, good_file), 'dummy content')
+    File.write(File.join(SRC_MOCK_DIR, bad_file),  'dummy content')
+
+    # 2. Перехватываем создание объекта Copier
+    original_new = Copier.method(:new)
+
+    Copier.stub(:new, ->(*args) {
+      instance = original_new.call(*args)
+
+      # Сохраняем оригинальный метод именно этого инстанса
+      original_rename = instance.method(:rename_and_copy)
+
+      # Подменяем метод у конкретного живого объекта
+      instance.define_singleton_method(:rename_and_copy) do |file_name|
+        if file_name == bad_file
+          raise StandardError, error_message
+        else
+          original_rename.call(file_name)
+        end
+      end
+
+      instance
+    }) do
+      # 3. Запускаем синхронизацию и ловим вывод в переменную output
+      output_text = nil
+      result = execute_sync do |output|
+        output_text = output
+      end
+
+      # 4. Проверяем отказоустойчивость
+      assert result, "Метод должен вернуть true, даже если один файл сломался"
+
+      # Хороший файл должен успешно скопироваться
+      assert File.exist?(File.join(TXT_MOCK_DIR, 'wg2_chi_san.conf'))
+
+      # Плохой файл не должен появиться в целевой папке
+      refute File.exist?(File.join(TXT_MOCK_DIR, 'wg2_UK_lon_S3.conf'))
+
+      # ПРОВЕРЯЕМ, что пользователю напечатался правильный текст ошибки
+      assert_match(/Ошибка при копировании файла #{bad_file}/, output_text)
+      assert_match(/#{error_message}/, output_text)
+
+      # Также проверяем, что об успехе тоже вывелась правильная информация
+      assert_match(/Успешно синхронизировано файлов: 1 из 2/, output_text)
+    end
+    # // do
+  end
+  # // test_continues_copying_if_one_file_fails
+
   private
 
     def write_test_config(src, target)
@@ -158,10 +214,16 @@ class FileCopierTest < Minitest::Test
     def execute_sync(period_arg = "0")
       # Перенаправляем стандартный вывод в "виртуальную строку"
       original_stdout = $stdout
-      $stdout = StringIO.new
+      captured_stdout = StringIO.new
+      $stdout = captured_stdout
 
       # Вызываем оригинальный метод и сохраняем его результат
-      FileCopier.sync!(period_arg: period_arg)
+      result = FileCopier.sync!(period_arg: period_arg)
+
+      # ЕСЛИ в тест передан блок, отдаем туда строку с выводом консоли
+      yield(captured_stdout.string) if block_given?
+
+      result
     ensure
       # Гарантированно возвращаем поток вывода системе, даже если sync! выбросит ошибку
       $stdout = original_stdout
