@@ -20,18 +20,9 @@ class FileCopier
     end
 
     def sync!(period_arg: "0")
-      # 1. Валидация директорий
+      # 1. Валидация директорий и входных данных
       source, target = validate_directories!
-
-      # 1.1 Валидация входных данных
-      unless period_arg == "all" || period_arg =~ /\A\d+\z/
-        puts "Ошибка: Неверный формат периода '#{period_arg}'."
-        puts "Используйте число дней (например: -p 3), 0 для сегодняшних файлов или 'all' для всех."
-        exit 1
-      end
-
-      # 1.2 Превращаем строку из консоли в правильный тип данных
-      period = period_arg == "all" ? :all : period_arg.to_i
+      period = parse_and_validate_period!(period_arg)
 
       # 2. Поиск файлов (ищем .conf, .wg, .json файлы конфигураций)
       files = Dir.glob(File.join(source, '*.{conf,wg,json,vpn}'))
@@ -75,6 +66,17 @@ class FileCopier
         end
 
         [source, target]
+      end
+
+      def parse_and_validate_period!(period_arg)
+        unless period_arg == "all" || period_arg =~ /\A\d+\z/
+          puts "Ошибка: Неверный формат периода '#{period_arg}'."
+          puts "Используйте число дней (например: -p 3), 0 для сегодняшних файлов или 'all' для всех."
+          exit 1
+        end
+
+        # Превращаем строку из консоли в правильный тип данных
+        period_arg == "all" ? :all : period_arg.to_i
       end
   end
 end
