@@ -69,7 +69,7 @@ class FileCopier
         end
       end
 
-      # Проверяет существование папок и возвращаем их пути кортежем
+      # Проверяет существование папок и возвращает их пути кортежем
       def validate_directories!
         source = Config.source_dir
         target = Config.target_dir
@@ -80,6 +80,7 @@ class FileCopier
         [source, target]
       end
 
+      # Проверяет строку из консоли и преобразует в правильный тип данных
       def parse_and_validate_period!(period_arg)
         unless period_arg == "all" || period_arg =~ /\A\d+\z/
           puts "Ошибка: Неверный формат периода '#{period_arg}'."
@@ -87,7 +88,6 @@ class FileCopier
           exit 1
         end
 
-        # Превращаем строку из консоли в правильный тип данных
         period_arg == "all" ? :all : period_arg.to_i
       end
   end
