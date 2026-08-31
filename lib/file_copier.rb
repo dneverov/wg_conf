@@ -14,23 +14,35 @@ class FileCopier
       files = find_config_files(source)
       return false unless files # Прерываем, если метод вернул false
 
+      # 3. Фильтрация по дате
       recent_files = filter_files(files, period: period)
 
-      # 3. Процесс копирования
-      copier = Copier.new
-      recent_files.each do |file_path|
-        file_name = File.basename(file_path)
-
-        # Копируем файл (перезапишет файл, если он уже есть)
-        target_name = copier.rename_and_copy(file_name)
-        puts "Скопирован: #{file_name} -> #{copier.set_path(target, target_name)}"
-      end
-
-      puts "Успешно синхронизировано файлов: #{recent_files.size}."
-      true
+      # 4. Процесс копирования
+      copy_files!(recent_files, target)
     end
 
     private
+
+      # Выполняет копирование файлов с обработкой ошибок
+      def copy_files!(files_to_copy, target_dir)
+        copier = Copier.new
+        copied_count = 0
+
+        files_to_copy.each do |file_path|
+          file_name = File.basename(file_path)
+
+          begin
+            target_name = copier.rename_and_copy(file_name)
+            puts "Скопирован: #{file_name} -> #{copier.set_path(target_dir, target_name)}"
+            copied_count += 1
+          rescue StandardError => e
+            puts "Ошибка при копировании файла #{file_name}: #{e.message}"
+          end
+        end
+
+        puts "Успешно синхронизировано файлов: #{copied_count} из #{files_to_copy.size}."
+        true
+      end
 
       # Ищет поддерживаемые типы файлов в папке-источнике
       def find_config_files(source)
@@ -57,7 +69,7 @@ class FileCopier
         end
       end
 
-      # Проверяем существование папок и возвращаем их пути кортежем
+      # Проверяет существование папок и возвращаем их пути кортежем
       def validate_directories!
         source = Config.source_dir
         target = Config.target_dir
