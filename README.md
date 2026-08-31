@@ -70,6 +70,7 @@ ruby test/units/namer_test.rb -n test_country_not_in_mapping
 - [x] Read from config file (+ add config.example)
 - [x] Process files from `Dir`
 - [x] Fix `FileCopier.sync!` log output
-- [ ] Ref: Add methods for validations from `FileCopierTest`
+- [x] Ref: Add methods for validations from `FileCopierTest`
 - [x] Update `FileCopierTest` for `FileCopier.sync!` with period
 - [ ] Add an utility for selecting VPN
+- [ ] Ref: Update `Copier` to work with instances (Low Priority)
