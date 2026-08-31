@@ -153,7 +153,7 @@ class FileCopierTest < Minitest::Test
     bad_file  = 'UnitedKingdomLondonS3.conf'
 
     File.write(File.join(SRC_MOCK_DIR, good_file), 'dummy content')
-    File.write(File.join(SRC_MOCK_DIR, bad_file), 'dummy content')
+    File.write(File.join(SRC_MOCK_DIR, bad_file),  'dummy content')
 
     # 2. Перехватываем создание объекта Copier
     original_new = Copier.method(:new)
@@ -175,8 +175,11 @@ class FileCopierTest < Minitest::Test
 
       instance
     }) do
-      # 3. Запускаем синхронизацию
-      result, _ = execute_sync
+      # 3. Запускаем синхронизацию и ловим вывод в переменную output
+      output_text = nil
+      result = execute_sync do |output|
+        output_text = output
+      end
 
       # 4. Проверяем отказоустойчивость
       assert result, "Метод должен вернуть true, даже если один файл сломался"
@@ -186,6 +189,13 @@ class FileCopierTest < Minitest::Test
 
       # Плохой файл не должен появиться в целевой папке
       refute File.exist?(File.join(TXT_MOCK_DIR, 'wg2_UK_lon_S3.conf'))
+
+      # ПРОВЕРЯЕМ, что пользователю напечатался правильный текст ошибки
+      assert_match(/Ошибка при копировании файла #{bad_file}/, output_text)
+      assert_match(/Диск переполнен или доступ запрещен/, output_text)
+
+      # Также проверяем, что об успехе тоже вывелась правильная информация
+      assert_match(/Успешно синхронизировано файлов: 1 из 2/, output_text)
     end
     # // do
   end
@@ -202,10 +212,16 @@ class FileCopierTest < Minitest::Test
     def execute_sync(period_arg = "0")
       # Перенаправляем стандартный вывод в "виртуальную строку"
       original_stdout = $stdout
-      $stdout = StringIO.new
+      captured_stdout = StringIO.new
+      $stdout = captured_stdout
 
       # Вызываем оригинальный метод и сохраняем его результат
-      FileCopier.sync!(period_arg: period_arg)
+      result = FileCopier.sync!(period_arg: period_arg)
+
+      # ЕСЛИ в тест передан блок, отдаем туда строку с выводом консоли
+      yield(captured_stdout.string) if block_given?
+
+      result
     ensure
       # Гарантированно возвращаем поток вывода системе, даже если sync! выбросит ошибку
       $stdout = original_stdout
