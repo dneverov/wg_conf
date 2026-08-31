@@ -147,6 +147,50 @@ class FileCopierTest < Minitest::Test
     assert_match(/Используйте число дней/, captured_stdout.string)
   end
 
+  def test_continues_copying_if_one_file_fails
+    # 1. Создаем два фейковых файла в исходной папке
+    good_file = 'ChileSantiago.conf'
+    bad_file  = 'UnitedKingdomLondonS3.conf'
+
+    File.write(File.join(SRC_MOCK_DIR, good_file), 'dummy content')
+    File.write(File.join(SRC_MOCK_DIR, bad_file), 'dummy content')
+
+    # 2. Перехватываем создание объекта Copier
+    original_new = Copier.method(:new)
+
+    Copier.stub(:new, ->(*args) {
+      instance = original_new.call(*args)
+
+      # Сохраняем оригинальный метод именно этого инстанса
+      original_rename = instance.method(:rename_and_copy)
+
+      # Подменяем метод у конкретного живого объекта
+      instance.define_singleton_method(:rename_and_copy) do |file_name|
+        if file_name == bad_file
+          raise StandardError, "Диск переполнен или доступ запрещен"
+        else
+          original_rename.call(file_name)
+        end
+      end
+
+      instance
+    }) do
+      # 3. Запускаем синхронизацию
+      result, _ = execute_sync
+
+      # 4. Проверяем отказоустойчивость
+      assert result, "Метод должен вернуть true, даже если один файл сломался"
+
+      # Хороший файл должен успешно скопироваться
+      assert File.exist?(File.join(TXT_MOCK_DIR, 'wg2_chi_san.conf'))
+
+      # Плохой файл не должен появиться в целевой папке
+      refute File.exist?(File.join(TXT_MOCK_DIR, 'wg2_UK_lon_S3.conf'))
+    end
+    # // do
+  end
+  # // test_continues_copying_if_one_file_fails
+
   private
 
     def write_test_config(src, target)
