@@ -24,13 +24,9 @@ class FileCopier
       source, target = validate_directories!
       period = parse_and_validate_period!(period_arg)
 
-      # 2. Поиск файлов (ищем .conf, .wg, .json файлы конфигураций)
-      files = Dir.glob(File.join(source, '*.{conf,wg,json,vpn}'))
-
-      if files.empty?
-        puts "В папке #{source} не найдено файлов конфигураций для копирования."
-        return false
-      end
+      # 2. Поиск конфигурационных файлов
+      files = find_config_files(source)
+      return false unless files # Прерываем, если метод вернул false
 
       recent_files = filter_files(files, period: period)
 
@@ -49,6 +45,18 @@ class FileCopier
     end
 
     private
+
+      # Ищет поддерживаемые типы файлов в папке-источнике
+      def find_config_files(source)
+        files = Dir.glob(File.join(source, '*.{conf,wg,json,vpn}'))
+
+        if files.empty?
+          puts "В папке #{source} не найдено файлов конфигураций для копирования."
+          return false
+        end
+
+        files
+      end
 
       # Проверяем существование папок и возвращаем их пути кортежем
       def validate_directories!

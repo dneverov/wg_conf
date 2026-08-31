@@ -25,7 +25,7 @@ class Copier
       exit
     end
 
-    # Call cp via sudo
+    # Call cp
     system_copy(source_path, target_path)
   end
 
