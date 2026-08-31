@@ -21,16 +21,7 @@ class FileCopier
 
     def sync!(period_arg: "0")
       # 1. Валидация директорий
-      source = Config.source_dir
-      target = Config.target_dir
-
-      unless Dir.exist?(source)
-        raise "Ошибка синхронизации: Исходная папка не существует (#{source})"
-      end
-
-      unless Dir.exist?(target)
-        raise "Целевая папка не найдена (#{target})"
-      end
+      source, target = validate_directories!
 
       # 1.1 Валидация входных данных
       unless period_arg == "all" || period_arg =~ /\A\d+\z/
@@ -67,5 +58,23 @@ class FileCopier
       puts "Успешно синхронизировано файлов: #{copied_count}."
       true
     end
+
+    private
+
+      # Проверяем существование папок и возвращаем их пути кортежем
+      def validate_directories!
+        source = Config.source_dir
+        target = Config.target_dir
+
+        unless Dir.exist?(source)
+          raise "Ошибка синхронизации: Исходная папка не существует (#{source})"
+        end
+
+        unless Dir.exist?(target)
+          raise "Целевая папка не найдена (#{target})"
+        end
+
+        [source, target]
+      end
   end
 end
