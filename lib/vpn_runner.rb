@@ -26,11 +26,11 @@ class VpnRunner
 
       # 1. Останавливаем любые запущенные ранее туннели awg-quick, чтобы не было конфликтов
       puts "Сброс старых подключений..."
-      system("sudo systemctl stop 'awg-quick@*'")
+      execute_command("sudo systemctl stop 'awg-quick@*'")
 
       # 2. Запускаем новый выбранный конфиг
       puts "Запуск сервиса #{service_name}..."
-      if system("sudo systemctl start #{service_name}")
+      if execute_command("sudo systemctl start #{service_name}")
         puts "VPN успешно запущен!"
         puts "-" * 40
         show_status(config_name)
@@ -42,18 +42,23 @@ class VpnRunner
       end
     end
 
+    # Обертка для всех системных вызовов
+    def execute_command(cmd)
+      system(cmd)
+    end
+
     private
 
       # Вывод реального сетевого интерфейса и статуса
       def show_status(interface_name)
         puts "Текущий статус интерфейса #{interface_name}:"
         # Показывает статус утилиты wg (или awg, в зависимости от того, что установлено в системе)
-        if system("which awg > /dev/null 2>&1")
-          system("sudo awg show #{interface_name}")
-        elsif system("which wg > /dev/null 2>&1")
-          system("sudo wg show #{interface_name}")
+        if execute_command("which awg > /dev/null 2>&1")
+          execute_command("sudo awg show #{interface_name}")
+        elsif execute_command("which wg > /dev/null 2>&1")
+          execute_command("sudo wg show #{interface_name}")
         else
-          system("ip a show dev #{interface_name}")
+          execute_command("ip a show dev #{interface_name}")
         end
       end
   end
