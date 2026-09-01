@@ -42,12 +42,12 @@ class VpnRunner
       end
     end
 
-    # Обертка для всех системных вызовов
-    def execute_command(cmd)
-      system(cmd)
-    end
-
     private
+
+      # Обертка для всех системных вызовов
+      def execute_command(cmd)
+        system(cmd)
+      end
 
       # Вывод реального сетевого интерфейса и статуса
       def show_status(interface_name)
