@@ -18,14 +18,23 @@ class VpnRunner
         config_name = File.basename(config_name, '.conf')
       end
 
-      service_name = "awg-quick@#{config_name}.service" # Для AmneziaWG
-
-      puts "Инициализация VPN соединения: #{config_name}..."
-
       # 1. Останавливаем любые запущенные ранее туннели awg-quick, чтобы не было конфликтов
       stop_connections
 
       # 2. Запускаем новый выбранный конфиг
+      start_connection(config_name)
+    end
+
+    def stop_connections
+      puts "Сброс старых подключений..."
+      execute_command("sudo systemctl stop 'awg-quick@*'")
+    end
+
+    def start_connection(config_name)
+      service_name = "awg-quick@#{config_name}.service" # Для AmneziaWG
+
+      puts "Инициализация VPN соединения: #{config_name}..."
+
       puts "Запуск сервиса #{service_name}..."
       if execute_command("sudo systemctl start #{service_name}")
         puts "VPN успешно запущен!"
@@ -37,11 +46,6 @@ class VpnRunner
         puts "Проверьте логи команды: sudo journalctl -u #{service_name} -n 20"
         false
       end
-    end
-
-    def stop_connections
-      puts "Сброс старых подключений..."
-      execute_command("sudo systemctl stop 'awg-quick@*'")
     end
 
     private
