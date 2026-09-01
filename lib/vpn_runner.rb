@@ -3,9 +3,7 @@ require_relative 'config'
 class VpnRunner
   class << self
     def run!(config_name = nil)
-      # TODO: Use a separate method
-      target_dir = Config.target_dir rescue nil
-      raise "Целевая папка не задана в конфигурации" if target_dir.nil?
+      target_dir = validate_target_dir!
 
       # Если имя конфига не передано, ищем первый доступный .conf файл в целевой папке
       if config_name.nil?
@@ -47,6 +45,12 @@ class VpnRunner
       # Обертка для всех системных вызовов
       def execute_command(cmd)
         system(cmd)
+      end
+
+      def validate_target_dir!
+        target_dir = Config.target_dir rescue nil
+        raise "Целевая папка не задана в конфигурации" if target_dir.nil?
+        target_dir
       end
 
       # Вывод реального сетевого интерфейса и статуса
