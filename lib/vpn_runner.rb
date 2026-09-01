@@ -23,8 +23,7 @@ class VpnRunner
       puts "Инициализация VPN соединения: #{config_name}..."
 
       # 1. Останавливаем любые запущенные ранее туннели awg-quick, чтобы не было конфликтов
-      puts "Сброс старых подключений..."
-      execute_command("sudo systemctl stop 'awg-quick@*'")
+      stop_connections
 
       # 2. Запускаем новый выбранный конфиг
       puts "Запуск сервиса #{service_name}..."
@@ -38,6 +37,11 @@ class VpnRunner
         puts "Проверьте логи команды: sudo journalctl -u #{service_name} -n 20"
         false
       end
+    end
+
+    def stop_connections
+      puts "Сброс старых подключений..."
+      execute_command("sudo systemctl stop 'awg-quick@*'")
     end
 
     private
