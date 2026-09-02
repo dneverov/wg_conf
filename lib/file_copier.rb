@@ -46,7 +46,7 @@ class FileCopier
 
       # Ищет поддерживаемые типы файлов в папке-источнике
       def find_config_files(source)
-        files = Dir.glob(File.join(source, '*.{conf,wg,json,vpn}'))
+        files = Config.find_files(source, '*.{conf,wg,json,vpn}')
 
         if files.empty?
           puts "В папке #{source} не найдено файлов конфигураций для копирования."
