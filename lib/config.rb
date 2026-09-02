@@ -2,6 +2,14 @@ require 'yaml'
 require 'fileutils'
 
 class Config
+  AVAILABLE_SERVICES = {
+    amnezia:   'awg-quick@', # AmneziaWG
+    wireguard: 'wg-quick@'   # WireGuard
+  }.freeze # Замораживаем хэш, чтобы защитить от случайного изменения
+
+  # По умолчанию используем amnezia, но в будущем сюда можно добавить чтение из @data.dig(...)
+  VPN_SERVICE = AVAILABLE_SERVICES[:amnezia]
+
   class << self
     def source_dir
       expand_path(@data.dig('config', 'source_dir') || '')
@@ -9,6 +17,11 @@ class Config
 
     def target_dir
       expand_path(@data.dig('config', 'target_dir') || '')
+    end
+
+    # Публичный хелпер для получения префикса сервиса
+    def vpn_service
+      VPN_SERVICE
     end
 
     # Универсальный хелпер для поиска файлов по маске
