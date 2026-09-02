@@ -1,6 +1,9 @@
 require 'optparse'
 require_relative 'lib/vpn_runner'
 
+# Важно: Вызываем ДО парсинга флагов с жестким перезапуском
+Config.check_root_privileges(strict: true)
+
 options = { stop: false }
 
 OptionParser.new do |opts|
