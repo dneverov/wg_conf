@@ -46,6 +46,8 @@ class Config
 
     # Мягкое предупреждение или перезапуск
     def check_root_privileges(strict: false)
+      # Если запущены тесты, пропускаем проверку прав, чтобы не вызывать exec('sudo')
+      return if ENV['TEST_ENV'] == 'true'
       return if Process.uid == 0
 
       if strict

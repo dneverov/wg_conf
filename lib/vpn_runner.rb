@@ -42,7 +42,13 @@ class VpnRunner
 
       # Обертка для всех системных вызовов
       def execute_command(cmd)
-        system(cmd)
+        # Если скрипт запущен внутри интеграционного теста, мы просто выводим команду в stdout
+        if ENV['TEST_ENV'] == 'true'
+          puts "[EXEC] #{cmd}"
+          true
+        else
+          system(cmd)
+        end
       end
 
       def get_interface_name(target_dir, config_name = nil)
