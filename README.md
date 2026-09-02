@@ -55,7 +55,7 @@ ruby vpn_run.rb -s
 
 Type key `-h` for help:
 ```sh
-ruby dir.rb -h
+ruby vpn_run.rb -h
 ```
 
 ## Test:
