@@ -67,8 +67,11 @@ class VpnRunner
             raise "В папке #{target_dir} не найдено активных конфигураций VPN."
           end
 
+          # Находим файл с максимальным временем изменения (mtime)
+          latest_config = available_configs.max_by { |file| File.mtime(file) }
+
           # Берем базовое имя без пути и без расширения (например, "wg2_chi_san")
-          File.basename(available_configs.first, '.conf')
+          File.basename(latest_config, '.conf')
         else
           File.basename(config_name, '.conf')
         end

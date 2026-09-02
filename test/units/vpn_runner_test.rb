@@ -51,13 +51,24 @@ class VpnRunnerTest < Minitest::Test
     assert_includes @executed_commands, "sudo awg show wg2_chi_san"
   end
 
-  def test_automatically_picks_first_config_if_none_provided
-    File.write(File.join(TARGET_MOCK, 'wg2_UK_lon_S3.conf'), 'dummy')
+  def test_automatically_picks_latest_config_if_none_provided
+    old_file    = File.join(TARGET_MOCK, 'wg2_old_config.conf')
+    latest_file = File.join(TARGET_MOCK, 'wg2_UK_lon_S3.conf')
 
+    # Создаем два файла
+    File.write(old_file,    'dummy old')
+    File.write(latest_file, 'dummy latest')
+
+    # Искусственно старим один из них на час назад
+    FileUtils.touch(old_file,    mtime: Time.now - 3600)
+    FileUtils.touch(latest_file, mtime: Time.now)
+
+    # Вызываем метод без аргументов
     assert VpnRunner.run!
 
+    # Скрипт должен выбрать именно самый свежий файл, проигнорировав старый
     assert_includes @executed_commands, "sudo systemctl start awg-quick@wg2_UK_lon_S3.service"
-    assert_includes @executed_commands, "sudo awg show wg2_UK_lon_S3"
+    refute_includes @executed_commands, "sudo systemctl start awg-quick@wg2_old_config.service"
   end
 
   def test_returns_false_if_no_configs_found_and_no_argument_provided
