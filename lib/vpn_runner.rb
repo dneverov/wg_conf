@@ -10,7 +10,7 @@ class VpnRunner
 
   class << self
     def run!(config_name = nil)
-      target_dir  = validate_target_dir!
+      target_dir  = Config.target_dir
       # Метод вернет имя или выбросит raise
       config_name = get_interface_name(target_dir, config_name)
 
@@ -50,12 +50,6 @@ class VpnRunner
       # Обертка для всех системных вызовов
       def execute_command(cmd)
         system(cmd)
-      end
-
-      def validate_target_dir!
-        target_dir = Config.target_dir rescue nil
-        raise "Целевая папка не задана в конфигурации" if target_dir.nil?
-        target_dir
       end
 
       def get_interface_name(target_dir, config_name = nil)
