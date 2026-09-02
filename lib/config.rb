@@ -11,6 +11,11 @@ class Config
       expand_path(@data.dig('config', 'target_dir') || '')
     end
 
+    # Универсальный хелпер для поиска файлов по маске
+    def find_files(directory, extension_mask)
+      Dir.glob(File.join(directory, extension_mask))
+    end
+
     # Выносим инициализацию в метод класса, чтобы его можно было безопасно перезапускать
     def load_data!
       file_path = ENV['CONFIG_PATH'] || 'config.yml'

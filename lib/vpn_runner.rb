@@ -61,7 +61,7 @@ class VpnRunner
       def get_interface_name(target_dir, config_name = nil)
         # Если имя конфига не передано, ищем первый доступный .conf файл в целевой папке
         config_name ||= begin
-          available_configs = Dir.glob(File.join(target_dir, '*.conf'))
+          available_configs = Config.find_files(target_dir, '*.conf')
 
           if available_configs.empty?
             raise "В папке #{target_dir} не найдено активных конфигураций VPN."
