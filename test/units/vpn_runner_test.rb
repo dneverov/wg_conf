@@ -46,9 +46,9 @@ class VpnRunnerTest < Minitest::Test
   def test_runs_with_explicit_config_name
     assert VpnRunner.run!("wg2_chi_san.conf")
 
-    assert_includes @executed_commands, "sudo systemctl stop 'awg-quick@*'"
-    assert_includes @executed_commands, "sudo systemctl start awg-quick@wg2_chi_san.service"
-    assert_includes @executed_commands, "sudo awg show wg2_chi_san"
+    assert_includes @executed_commands, "systemctl stop 'awg-quick@*'"
+    assert_includes @executed_commands, "systemctl start awg-quick@wg2_chi_san.service"
+    assert_includes @executed_commands, "awg show wg2_chi_san"
   end
 
   def test_automatically_picks_latest_config_if_none_provided
@@ -67,8 +67,8 @@ class VpnRunnerTest < Minitest::Test
     assert VpnRunner.run!
 
     # Скрипт должен выбрать именно самый свежий файл, проигнорировав старый
-    assert_includes @executed_commands, "sudo systemctl start awg-quick@wg2_UK_lon_S3.service"
-    refute_includes @executed_commands, "sudo systemctl start awg-quick@wg2_old_config.service"
+    assert_includes @executed_commands, "systemctl start awg-quick@wg2_UK_lon_S3.service"
+    refute_includes @executed_commands, "systemctl start awg-quick@wg2_old_config.service"
   end
 
   def test_returns_false_if_no_configs_found_and_no_argument_provided

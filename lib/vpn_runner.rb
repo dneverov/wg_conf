@@ -19,14 +19,14 @@ class VpnRunner
     def stop_connections
       puts "Сброс старых подключений..."
       # sudo systemctl stop 'awg-quick@*'
-      execute_command("sudo systemctl stop '#{Config.vpn_service}*'")
+      execute_command("systemctl stop '#{Config.vpn_service}*'")
     end
 
     def start_connection(config_name)
       service_name = "#{Config.vpn_service}#{config_name}.service"
 
       puts "Запуск сервиса #{service_name}..."
-      if execute_command("sudo systemctl start #{service_name}")
+      if execute_command("systemctl start #{service_name}")
         puts "VPN успешно запущен!"
         puts "-" * 40
         show_status(config_name)
@@ -67,9 +67,9 @@ class VpnRunner
         puts "Текущий статус интерфейса #{interface_name}:"
         # Показывает статус утилиты wg (или awg, в зависимости от того, что установлено в системе)
         if execute_command("which awg > /dev/null 2>&1")
-          execute_command("sudo awg show #{interface_name}")
+          execute_command("awg show #{interface_name}")
         elsif execute_command("which wg > /dev/null 2>&1")
-          execute_command("sudo wg show #{interface_name}")
+          execute_command("wg show #{interface_name}")
         else
           execute_command("ip a show dev #{interface_name}")
         end
