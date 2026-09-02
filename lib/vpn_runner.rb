@@ -14,6 +14,8 @@ class VpnRunner
       # Метод вернет имя или выбросит raise
       config_name = get_interface_name(target_dir, config_name)
 
+      puts "Инициализация VPN соединения: #{config_name}..."
+
       # 1. Останавливаем любые запущенные ранее туннели awg-quick, чтобы не было конфликтов
       stop_connections
 
@@ -29,8 +31,6 @@ class VpnRunner
 
     def start_connection(config_name)
       service_name = "#{VPN_SERVICE}#{config_name}.service"
-
-      puts "Инициализация VPN соединения: #{config_name}..."
 
       puts "Запуск сервиса #{service_name}..."
       if execute_command("sudo systemctl start #{service_name}")
