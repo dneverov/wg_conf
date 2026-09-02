@@ -72,5 +72,5 @@ ruby test/units/namer_test.rb -n test_country_not_in_mapping
 - [x] Fix `FileCopier.sync!` log output
 - [x] Ref: Add methods for validations from `FileCopierTest`
 - [x] Update `FileCopierTest` for `FileCopier.sync!` with period
-- [ ] Add an utility for selecting VPN
+- [x] Add an utility for selecting VPN
 - [ ] Ref: Update `Copier` to work with instances (Low Priority)
