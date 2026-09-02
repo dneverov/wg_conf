@@ -61,7 +61,11 @@ class VpnRunnerTest < Minitest::Test
   end
 
   def test_returns_false_if_no_configs_found_and_no_argument_provided
-    refute VpnRunner.run!
+    # Папка пустая, аргументов нет — ожидаем падение с RuntimeError
+    assert_raises(RuntimeError) do
+      VpnRunner.run!
+    end
+
     assert_empty @executed_commands
   end
 

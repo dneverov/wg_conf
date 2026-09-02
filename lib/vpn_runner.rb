@@ -11,9 +11,8 @@ class VpnRunner
   class << self
     def run!(config_name = nil)
       target_dir  = validate_target_dir!
+      # Метод вернет имя или выбросит raise
       config_name = get_interface_name(target_dir, config_name)
-
-      return false if config_name.nil?
 
       # 1. Останавливаем любые запущенные ранее туннели awg-quick, чтобы не было конфликтов
       stop_connections
@@ -63,10 +62,11 @@ class VpnRunner
         # Если имя конфига не передано, ищем первый доступный .conf файл в целевой папке
         if config_name.nil?
           available_configs = Dir.glob(File.join(target_dir, '*.conf'))
+
           if available_configs.empty?
-            puts "Ошибка: В папке #{target_dir} не найдено активных конфигураций VPN."
-            return nil
+            raise "В папке #{target_dir} не найдено активных конфигураций VPN."
           end
+
           # Берем базовое имя без пути и без расширения (например, "wg2_chi_san")
           File.basename(available_configs.first, '.conf')
         else
