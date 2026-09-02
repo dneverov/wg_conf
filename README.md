@@ -38,6 +38,26 @@ Type key `-h` for help:
 ruby dir.rb -h
 ```
 
+### `vpn_run.rb`
+
+Starts AmneziaWG VPN using configs from a target directory.
+
+```bash
+# By default starts the latest (most recent) config
+sudo ruby vpn_run.rb
+# OR without sudo (it will re-run with sudo)
+ruby vpn_run.rb
+# OR
+ruby vpn_run.rb wg2_net_ams_H16
+# To stop services:
+ruby vpn_run.rb -s
+```
+
+Type key `-h` for help:
+```sh
+ruby dir.rb -h
+```
+
 ## Test:
 
 ```sh
