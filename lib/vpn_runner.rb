@@ -1,6 +1,13 @@
 require_relative 'config'
 
 class VpnRunner
+  AVAILABLE_SERVICES = {
+    amnezia:   'awg-quick@', # AmneziaWG
+    wireguard: 'wg-quick@'   # WireGuard
+  }
+
+  VPN_SERVICE = AVAILABLE_SERVICES[:amnezia]
+
   class << self
     def run!(config_name = nil)
       target_dir = validate_target_dir!
@@ -27,11 +34,12 @@ class VpnRunner
 
     def stop_connections
       puts "Сброс старых подключений..."
-      execute_command("sudo systemctl stop 'awg-quick@*'")
+      # sudo systemctl stop 'awg-quick@*'
+      execute_command("sudo systemctl stop '#{VPN_SERVICE}*'")
     end
 
     def start_connection(config_name)
-      service_name = "awg-quick@#{config_name}.service" # Для AmneziaWG
+      service_name = "#{VPN_SERVICE}#{config_name}.service" # Для AmneziaWG
 
       puts "Инициализация VPN соединения: #{config_name}..."
 
