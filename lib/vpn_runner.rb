@@ -12,18 +12,8 @@ class VpnRunner
     def run!(config_name = nil)
       target_dir = validate_target_dir!
 
-      # Если имя конфига не передано, ищем первый доступный .conf файл в целевой папке
-      if config_name.nil?
-        available_configs = Dir.glob(File.join(target_dir, '*.conf'))
-        if available_configs.empty?
-          puts "Ошибка: В папке #{target_dir} не найдено активных конфигураций VPN."
-          return false
-        end
-        # Берем базовое имя без пути и без расширения (например, "wg2_chi_san")
-        config_name = File.basename(available_configs.first, '.conf')
-      else
-        config_name = File.basename(config_name, '.conf')
-      end
+      config_name = get_interface_name(target_dir, config_name)
+      return false unless config_name
 
       # 1. Останавливаем любые запущенные ранее туннели awg-quick, чтобы не было конфликтов
       stop_connections
@@ -39,7 +29,7 @@ class VpnRunner
     end
 
     def start_connection(config_name)
-      service_name = "#{VPN_SERVICE}#{config_name}.service" # Для AmneziaWG
+      service_name = "#{VPN_SERVICE}#{config_name}.service"
 
       puts "Инициализация VPN соединения: #{config_name}..."
 
@@ -67,6 +57,21 @@ class VpnRunner
         target_dir = Config.target_dir rescue nil
         raise "Целевая папка не задана в конфигурации" if target_dir.nil?
         target_dir
+      end
+
+      def get_interface_name(target_dir, config_name = nil)
+        # Если имя конфига не передано, ищем первый доступный .conf файл в целевой папке
+        if config_name.nil?
+          available_configs = Dir.glob(File.join(target_dir, '*.conf'))
+          if available_configs.empty?
+            puts "Ошибка: В папке #{target_dir} не найдено активных конфигураций VPN."
+            return false
+          end
+          # Берем базовое имя без пути и без расширения (например, "wg2_chi_san")
+          File.basename(available_configs.first, '.conf')
+        else
+          File.basename(config_name, '.conf')
+        end
       end
 
       # Вывод реального сетевого интерфейса и статуса
