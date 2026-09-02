@@ -60,7 +60,7 @@ class VpnRunner
 
       def get_interface_name(target_dir, config_name = nil)
         # Если имя конфига не передано, ищем первый доступный .conf файл в целевой папке
-        if config_name.nil?
+        config_name ||= begin
           available_configs = Dir.glob(File.join(target_dir, '*.conf'))
 
           if available_configs.empty?
@@ -68,13 +68,11 @@ class VpnRunner
           end
 
           # Находим файл с максимальным временем изменения (mtime)
-          latest_config = available_configs.max_by { |file| File.mtime(file) }
-
-          # Берем базовое имя без пути и без расширения (например, "wg2_chi_san")
-          File.basename(latest_config, '.conf')
-        else
-          File.basename(config_name, '.conf')
+          available_configs.max_by { |file| File.mtime(file) }
         end
+
+        # Берем базовое имя без пути и без расширения (например, "wg2_chi_san")
+        File.basename(config_name, '.conf')
       end
 
       # Вывод реального сетевого интерфейса и статуса
