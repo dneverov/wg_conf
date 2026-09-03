@@ -4,7 +4,7 @@ require_relative 'lib/vpn_runner'
 # Важно: Вызываем ДО парсинга флагов с жестким перезапуском
 Config.check_root_privileges(strict: true)
 
-options = { stop: false }
+options = { stop: false, status: false }
 
 OptionParser.new do |opts|
   opts.banner = "Использование: ruby vpn_run.rb [options] [config_name]"
@@ -12,6 +12,10 @@ OptionParser.new do |opts|
   # Настраиваем ключ -s для остановки
   opts.on("-s", "--stop", "Остановить текущее VPN соединение") do
     options[:stop] = true
+  end
+
+  opts.on("-i", "--status", "Показать статус интерфейса после подключения") do
+    options[:status] = true
   end
 
   opts.on("-h", "--help", "Показать эту справку") do
@@ -31,4 +35,4 @@ end
 
 puts "Attempting to run VPN with #{config_name || 'latest config'}..."
 
-VpnRunner.run!(config_name)
+VpnRunner.run!(config_name, show_status: options[:status])

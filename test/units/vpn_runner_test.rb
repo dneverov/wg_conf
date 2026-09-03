@@ -44,7 +44,7 @@ class VpnRunnerTest < Minitest::Test
   # --- ТЕСТЫ ---
 
   def test_runs_with_explicit_config_name
-    assert VpnRunner.run!("wg2_chi_san.conf")
+    assert VpnRunner.run!("wg2_chi_san.conf", show_status: true)
 
     assert_includes @executed_commands, "systemctl stop 'awg-quick@*'"
     assert_includes @executed_commands, "systemctl start awg-quick@wg2_chi_san.service"
@@ -63,12 +63,23 @@ class VpnRunnerTest < Minitest::Test
     FileUtils.touch(old_file,    mtime: Time.now - 3600)
     FileUtils.touch(latest_file, mtime: Time.now)
 
-    # Вызываем метод без аргументов
-    assert VpnRunner.run!
+    # Передаем show_status: true
+    assert VpnRunner.run!(show_status: true)
 
     # Скрипт должен выбрать именно самый свежий файл, проигнорировав старый
     assert_includes @executed_commands, "systemctl start awg-quick@wg2_UK_lon_S3.service"
+    assert_includes @executed_commands, "awg show wg2_UK_lon_S3"
     refute_includes @executed_commands, "systemctl start awg-quick@wg2_old_config.service"
+  end
+
+  # Проверяем тихий режим по умолчанию (без флага -i)
+  def test_does_not_show_status_by_default
+    assert VpnRunner.run!("wg2_chi_san.conf") # Вызов по умолчанию без флагов
+
+    assert_includes @executed_commands, "systemctl start awg-quick@wg2_chi_san.service"
+    # Метод show_status не должен был вызываться, проверяем отсутствие команд диагностики
+    refute_includes @executed_commands, "awg show wg2_chi_san"
+    refute_includes @executed_commands, "wg show wg2_chi_san"
   end
 
   def test_returns_false_if_no_configs_found_and_no_argument_provided

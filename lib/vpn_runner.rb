@@ -2,7 +2,7 @@ require_relative 'config'
 
 class VpnRunner
   class << self
-    def run!(config_name = nil)
+    def run!(config_name = nil, show_status: false)
       target_dir  = Config.target_dir
       # Метод вернет имя или выбросит raise
       config_name = get_interface_name(target_dir, config_name)
@@ -13,7 +13,7 @@ class VpnRunner
       stop_connections
 
       # 2. Запускаем новый выбранный конфиг
-      start_connection(config_name)
+      start_connection(config_name, show_status: show_status)
     end
 
     def stop_connections
@@ -22,14 +22,14 @@ class VpnRunner
       execute_command("systemctl stop '#{Config.vpn_service}*'")
     end
 
-    def start_connection(config_name)
+    def start_connection(config_name, show_status:)
       service_name = "#{Config.vpn_service}#{config_name}.service"
 
       puts "Запуск сервиса #{service_name}..."
       if execute_command("systemctl start #{service_name}")
         puts "VPN успешно запущен!"
         puts "-" * 40
-        show_status(config_name)
+        show_status(config_name) if show_status
         true
       else
         puts "Ошибка: Не удалось запустить сервис #{service_name}."
