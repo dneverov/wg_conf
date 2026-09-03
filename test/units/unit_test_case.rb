@@ -1,6 +1,7 @@
 require 'minitest/autorun'
 require 'fileutils'
 require 'yaml'
+require 'stringio'
 require_relative '../../lib/config'
 
 class UnitTestCase < Minitest::Test
@@ -13,23 +14,36 @@ class UnitTestCase < Minitest::Test
   end
 
   def setup
-    ENV['CONFIG_PATH'] = self.class::CONFIG_FILE
+    # 1. Если у дочернего класса объявлены пути, создаем папки на диске
+    if defined?(self.class::TEST_DIR)
+      FileUtils.mkdir_p(self.class::TEST_DIR)
+      FileUtils.mkdir_p(self.class::SRC_MOCK_DIR)
+      FileUtils.mkdir_p(self.class::TXT_MOCK_DIR)
 
-    FileUtils.mkdir_p(self.class::TEST_DIR)
-    FileUtils.mkdir_p(self.class::SRC_MOCK_DIR)
-    FileUtils.mkdir_p(self.class::TXT_MOCK_DIR)
-
-    # Записываем конфигурацию и принудительно перечитываем её в память
-    write_test_config(self.class::SRC_MOCK_DIR, self.class::TXT_MOCK_DIR)
-    Config.load_data!
+      # 2. Инициализируем YAML-конфиг (нужно для FileCopierTest и CopierTest)
+      ENV['CONFIG_PATH'] = self.class::CONFIG_FILE
+      # Записываем конфигурацию и принудительно перечитываем её в память
+      write_test_config(self.class::SRC_MOCK_DIR, self.class::TXT_MOCK_DIR)
+      Config.load_data!
+    end
   end
 
   def teardown
-    FileUtils.rm_rf(self.class::TEST_DIR)
+    FileUtils.rm_rf(self.class::TEST_DIR) if defined?(self.class::TEST_DIR)
     ENV.delete('CONFIG_PATH')
   end
 
   private
+
+    # Глушилка вывода puts, которую можно вызвать в setup дочернего класса
+    def capture_stdout!
+      @original_stdout = $stdout
+      $stdout = StringIO.new
+    end
+
+    def restore_stdout!
+      $stdout = @original_stdout if @original_stdout
+    end
 
     # Переиспользуемый хелпер для создания файлов конфигурации
     def create_mock_config(directory, name, days_old: 0, content: 'dummy')
@@ -47,5 +61,30 @@ class UnitTestCase < Minitest::Test
     def write_test_config(source, target)
       hash = { 'config' => { 'source_dir' => source, 'target_dir' => target } }
       File.write(self.class::CONFIG_FILE, hash.to_yaml)
+    end
+
+    # --- Универсальные хелперы метапрограммирования ---
+    def replace_method(klass, original_name, backup_name, &block)
+      klass.singleton_class.class_eval do
+        # Проверяем и публичные, и приватные методы для бэкапа
+        is_private = private_method_defined?(original_name)
+        alias_method backup_name, original_name if method_defined?(original_name) || is_private
+        define_method(original_name, &block)
+        # Если оригинальный метод был приватным, сохраняем эту приватность и для заглушки
+        private original_name if is_private
+      end
+    end
+
+    def restore_method(klass, original_name, backup_name)
+      klass.singleton_class.class_eval do
+        is_private = private_method_defined?(backup_name)
+        if method_defined?(backup_name) || is_private
+          remove_method original_name
+          alias_method original_name, backup_name
+          # Явно возвращаем методу статус private, если он был таким изначально
+          private original_name if is_private
+          remove_method backup_name
+        end
+      end
     end
 end
