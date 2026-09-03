@@ -9,7 +9,7 @@ class DirScriptTest < IntegrationTestCase
   TXT_MOCK_DIR = TARGET_MOCK
 
   def test_script_runs_with_default_period_without_flags
-    File.write(File.join(SRC_MOCK_DIR, 'ChileSantiago.conf'), 'dummy')
+    create_mock_config(SRC_MOCK_DIR, 'ChileSantiago.conf')
 
     # Запускаем скрипт без флагов в отдельном процессе
     stdout, _, status = run_script
@@ -20,9 +20,8 @@ class DirScriptTest < IntegrationTestCase
   end
 
   def test_script_accepts_short_period_flag
-    file = File.join(SRC_MOCK_DIR, 'ChileSantiago.conf')
-    File.write(file, 'dummy')
-    FileUtils.touch(file, mtime: Time.now - (3 * 24 * 60 * 60))
+    # Создаем файл с возрастом в 3 дня
+    create_mock_config(SRC_MOCK_DIR, 'ChileSantiago.conf', days_old: 3)
 
     # Передаем ключ -p 3
     _, _, status = run_script("-p", "3")
@@ -32,9 +31,8 @@ class DirScriptTest < IntegrationTestCase
   end
 
   def test_script_accepts_long_period_flag
-    file = File.join(SRC_MOCK_DIR, 'ChileSantiago.conf')
-    File.write(file, 'dummy')
-    FileUtils.touch(file, mtime: Time.now - (5 * 24 * 60 * 60))
+    # Создаем файл с возрастом в 5 дней
+    create_mock_config(SRC_MOCK_DIR, 'ChileSantiago.conf', days_old: 5)
 
     # Передаем ключ --period 5
     _, _, status = run_script("--period", "5")

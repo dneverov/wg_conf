@@ -75,8 +75,8 @@ class VpnRunScriptTest < IntegrationTestCase
 
   private
 
-    # Хелпер для быстрого создания фейковых конфигов
+    # Проксируем вызов в базовый класс
     def create_mock_config(name = 'wg2_chi_san.conf', content = 'dummy')
-      File.write(File.join(TARGET_MOCK, name), content)
+      super(self.class::TARGET_MOCK, name, content: content)
     end
 end

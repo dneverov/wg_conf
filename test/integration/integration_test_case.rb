@@ -52,4 +52,18 @@ class IntegrationTestCase < Minitest::Test
       # Open3.capture3 возвращает [stdout_string, stderr_string, process_status]
       Open3.capture3(env, 'ruby', self.class::SCRIPT_PATH, *args)
     end
+
+    # Универсальный хелпер для создания конфигов с возможностью "состарить" их на N дней
+    def create_mock_config(directory, name, days_old: 0, content: 'dummy')
+      file_path = File.join(directory, name)
+      File.write(file_path, content)
+
+      if days_old > 0
+        # Высчитываем время в секундах (N дней назад)
+        target_time = Time.now - (days_old * 24 * 60 * 60)
+        FileUtils.touch(file_path, mtime: target_time)
+      end
+
+      file_path
+    end
 end
