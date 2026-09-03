@@ -64,6 +64,35 @@ class VpnRunScriptTest < Minitest::Test
     assert_match(/\[EXEC\] systemctl start awg-quick@wg2_uk_lon.service/, stdout)
   end
 
+  def test_script_does_not_show_status_by_default
+    # Создаем фейковый конфиг, чтобы раннеру было что запускать
+    File.write(File.join(TARGET_MOCK, 'wg2_chi_san.conf'), 'dummy')
+
+    stdout, _, status = run_script
+
+    assert status.success?
+    assert_match(/VPN успешно запущен!/, stdout)
+
+    # Проверяем, что по умолчанию диагностика скрыта
+    refute_match(/Текущий статус интерфейса/, stdout)
+    refute_match(/\[EXEC\] awg show/, stdout)
+  end
+
+  def test_script_shows_status_with_flag_i
+    # Создаем фейковый конфиг
+    File.write(File.join(TARGET_MOCK, 'wg2_chi_san.conf'), 'dummy')
+
+    # Запускаем с флагом -i
+    stdout, _, status = run_script("-i")
+
+    assert status.success?
+    assert_match(/VPN успешно запущен!/, stdout)
+
+    # Проверяем, что флаг -i принудительно включил вывод статуса
+    assert_match(/Текущий статус интерфейса wg2_chi_san:/, stdout)
+    assert_match(/\[EXEC\] awg show wg2_chi_san/, stdout)
+  end
+
   private
 
     # Хелпер для запуска vpn_run.rb в изолированном подпроцессе
