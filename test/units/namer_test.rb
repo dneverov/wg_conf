@@ -40,6 +40,11 @@ module NamerTests
     def test_fallback_for_invalid_names
       assert_equal ["short", "", ""], extract_parts("Short.conf")
     end
+
+    # Проверяем, что метод устойчив к передаче полных путей, а не только имен файлов
+    def test_handles_full_file_paths_correctly
+      assert_equal ["chile", "santiago", ""], extract_parts("/absolute/path/to/ChileSantiago.conf")
+    end
   end
 
   # .new_config_name
@@ -58,6 +63,11 @@ module NamerTests
 
     def test_rendering_with_complex_city
       assert_equal "wg2_USA_new_S2.conf", render("USANewYorkCityS2.conf")
+    end
+
+    # Проверяем рендеринг при передаче полного пути
+    def test_rendering_handles_full_file_paths
+      assert_equal "wg2_chi_san.conf", render("/home/user/Downloads/ChileSantiago.conf")
     end
   end
 end
