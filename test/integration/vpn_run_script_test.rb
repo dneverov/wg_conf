@@ -46,7 +46,7 @@ class VpnRunScriptTest < Minitest::Test
 
   def test_script_runs_latest_config_by_default
     # Создаем тестовый .conf файл в нашей фейковой целевой папке
-    File.write(File.join(TARGET_MOCK, 'wg2_chi_san.conf'), 'dummy')
+    create_mock_config
 
     stdout, _, status = run_script
 
@@ -66,7 +66,7 @@ class VpnRunScriptTest < Minitest::Test
 
   def test_script_does_not_show_status_by_default
     # Создаем фейковый конфиг, чтобы раннеру было что запускать
-    File.write(File.join(TARGET_MOCK, 'wg2_chi_san.conf'), 'dummy')
+    create_mock_config
 
     stdout, _, status = run_script
 
@@ -80,7 +80,7 @@ class VpnRunScriptTest < Minitest::Test
 
   def test_script_shows_status_with_flag_i
     # Создаем фейковый конфиг
-    File.write(File.join(TARGET_MOCK, 'wg2_chi_san.conf'), 'dummy')
+    create_mock_config
 
     # Запускаем с флагом -i
     stdout, _, status = run_script("-i")
@@ -94,6 +94,11 @@ class VpnRunScriptTest < Minitest::Test
   end
 
   private
+
+    # Хелпер для быстрого создания фейковых конфигов
+    def create_mock_config(name = 'wg2_chi_san.conf', content = 'dummy')
+      File.write(File.join(TARGET_MOCK, name), content)
+    end
 
     # Хелпер для запуска vpn_run.rb в изолированном подпроцессе
     def run_script(*args)
