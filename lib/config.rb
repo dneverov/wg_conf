@@ -44,13 +44,27 @@ class Config
       @data = YAML.load_file(file_path)
     end
 
-    # Мягкое предупреждение вместо жесткого прерывания exit 1
-    def check_root_privileges(script_name = File.basename($0))
+    # Мягкое предупреждение или перезапуск
+    def check_root_privileges(strict: false)
+      # Если запущены тесты, пропускаем проверку прав, чтобы не вызывать exec('sudo')
+      return if ENV['TEST_ENV'] == 'true'
       return if Process.uid == 0
 
-      puts "Примечание: Скрипт запущен без прав суперпользователя."
-      puts "Если целевая папка защищена от записи, может потребоваться: sudo ruby #{script_name}"
-      puts "-" * 40
+      if strict
+        puts "Для работы скрипта требуются права суперпользователя. Перезапуск через sudo..."
+        puts "-" * 40
+
+        # exec заменяет текущий процесс.
+        # Он выполнит: sudo ruby vpn_run.rb -s (сохраняя все аргументы)
+        exec('sudo', 'ruby', $0, *ARGV)
+      else
+        puts "Примечание: Скрипт запущен без прав суперпользователя."
+        puts "Если целевая папка защищена от записи, может потребоваться: sudo ruby #{File.basename($0)}"
+        puts "-" * 40
+      end
+    rescue SystemCallError
+      puts "Ошибка: Не удалось получить права суперпользователя."
+      exit 1
     end
 
     private
