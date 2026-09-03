@@ -1,44 +1,18 @@
-require 'minitest/autorun'
-require 'fileutils'
-require 'yaml'
-require_relative '../../lib/config'
+require_relative 'unit_test_case'
 require_relative '../../lib/file_copier'
 
-class FileCopierTest < Minitest::Test
-  TEST_DIR     = File.expand_path('../test_files', __dir__)
-  CONFIG_FILE  = File.join(TEST_DIR, 'config_test.yml')
-  
-  # Создаем временные папки для симуляции копирования
-  SRC_MOCK_DIR = File.join(TEST_DIR, 'src_mock')
-  TXT_MOCK_DIR = File.join(TEST_DIR, 'target_mock')
-
-  def setup
-    ENV['CONFIG_PATH'] = CONFIG_FILE
-    FileUtils.mkdir_p(TEST_DIR)
-    FileUtils.mkdir_p(SRC_MOCK_DIR)
-    FileUtils.mkdir_p(TXT_MOCK_DIR)
-    
-    # Записываем в конфиг пути к нашим фейковым папкам внутри test_files/
-    write_test_config(SRC_MOCK_DIR, TXT_MOCK_DIR)
-    Config.load_data!
-  end
-
-  def teardown
-    # Полностью вычищаем всю тестовую грязь
-    FileUtils.rm_rf(TEST_DIR)
-    ENV.delete('CONFIG_PATH')
-  end
-
-  # -- FileCopier.sync! --
+class FileCopierTest < UnitTestCase
+  # Генерирует константы TEST_DIR, CONFIG_FILE, SRC_MOCK_DIR и TXT_MOCK_DIR
+  setup_unit_paths 'file_copier'
 
   # --- ТЕСТЫ ---
 
   # TODO: Update also for supported types (without renaming)
   def test_successfully_copies_supported_files
     # 1. Создаем фейковые файлы конфигураций в папке-источнике
-    File.write(File.join(SRC_MOCK_DIR, 'UnitedKingdomLondonS3.conf'), 'dummy content')
-    File.write(File.join(SRC_MOCK_DIR, 'ChileSantiago.conf'), 'dummy conf')
-    File.write(File.join(SRC_MOCK_DIR, 'USANewYorkCityS2.png'), 'not a config') # Этот файл копироваться НЕ должен
+    create_mock_config(SRC_MOCK_DIR, 'UnitedKingdomLondonS3.conf', content: 'dummy content')
+    create_mock_config(SRC_MOCK_DIR, 'ChileSantiago.conf',         content: 'dummy conf')
+    create_mock_config(SRC_MOCK_DIR, 'USANewYorkCityS2.png',       content: 'not a config') # Этот файл копироваться НЕ должен
 
     # 2. Запускаем метод синхронизации
     assert execute_sync
@@ -76,15 +50,8 @@ class FileCopierTest < Minitest::Test
 
   def test_filters_files_by_period_today
     # Создаем один сегодняшний файл и один старый (5 дней назад)
-    today_file = File.join(SRC_MOCK_DIR, 'ChileSantiago.conf')
-    old_file = File.join(SRC_MOCK_DIR, 'UnitedKingdomLondonS3.conf')
-
-    File.write(today_file, 'today')
-    File.write(old_file, 'old')
-
-    # Искусственно «старим» один файл на 5 дней назад
-    five_days_ago = Time.now - (5 * 24 * 60 * 60)
-    FileUtils.touch(old_file, mtime: five_days_ago)
+    create_mock_config(SRC_MOCK_DIR, 'ChileSantiago.conf',         content: 'today')
+    create_mock_config(SRC_MOCK_DIR, 'UnitedKingdomLondonS3.conf', content: 'old', days_old: 5)
 
     # Запускаем для "0" (сегодня)
     assert execute_sync("0")
@@ -95,15 +62,8 @@ class FileCopierTest < Minitest::Test
   end
 
   def test_filters_files_by_period_integer_days
-    file_3_days_ago = File.join(SRC_MOCK_DIR, 'ChileSantiago.conf')
-    file_5_days_ago = File.join(SRC_MOCK_DIR, 'UnitedKingdomLondonS3.conf')
-
-    File.write(file_3_days_ago, '3 days')
-    File.write(file_5_days_ago, '5 days')
-
-    # Меняем время модификации файлов
-    FileUtils.touch(file_3_days_ago, mtime: Time.now - (3 * 24 * 60 * 60))
-    FileUtils.touch(file_5_days_ago, mtime: Time.now - (5 * 24 * 60 * 60))
+    create_mock_config(SRC_MOCK_DIR, 'ChileSantiago.conf',         content: '3 days', days_old: 3)
+    create_mock_config(SRC_MOCK_DIR, 'UnitedKingdomLondonS3.conf', content: '5 days', days_old: 5)
 
     # Ищем файлы за последние 4 дня
     assert execute_sync("4")
@@ -114,9 +74,8 @@ class FileCopierTest < Minitest::Test
   end
 
   def test_copies_all_files_when_period_is_all
-    old_file = File.join(SRC_MOCK_DIR, 'ChileSantiago.conf')
-    File.write(old_file, 'old')
-    FileUtils.touch(old_file, mtime: Time.now - (100 * 24 * 60 * 60)) # 100 дней назад
+    # 100 дней назад
+    create_mock_config(SRC_MOCK_DIR, 'ChileSantiago.conf', content: 'old', days_old: 100)
 
     # С параметром "all" дата не важна
     assert execute_sync("all")
@@ -154,8 +113,8 @@ class FileCopierTest < Minitest::Test
     good_file = 'ChileSantiago.conf'
     bad_file  = 'UnitedKingdomLondonS3.conf'
 
-    File.write(File.join(SRC_MOCK_DIR, good_file), 'dummy content')
-    File.write(File.join(SRC_MOCK_DIR, bad_file),  'dummy content')
+    create_mock_config(SRC_MOCK_DIR, good_file, content: 'good')
+    create_mock_config(SRC_MOCK_DIR, bad_file,  content: 'bad')
 
     # 2. Перехватываем создание объекта Copier
     original_new = Copier.method(:new)
@@ -204,11 +163,6 @@ class FileCopierTest < Minitest::Test
   # // test_continues_copying_if_one_file_fails
 
   private
-
-    def write_test_config(src, target)
-      hash = { 'config' => { 'source_dir' => src, 'target_dir' => target } }
-      File.write(CONFIG_FILE, hash.to_yaml)
-    end
 
     # A wrapper method for the `FileCopier.sync!`
     def execute_sync(period_arg = "0")
