@@ -1,13 +1,10 @@
-require 'minitest/autorun'
-require 'fileutils'
-require 'yaml'
+require_relative 'unit_test_case'
 
-# Загружаем класс один раз в самом начале
-require_relative '../../lib/config'
+class ConfigTest < UnitTestCase
+  # Автоматически генерирует константы TEST_DIR и CONFIG_FILE (как test_files_config)
+  setup_unit_paths 'config'
 
-class ConfigTest < Minitest::Test
-  TEST_DIR     = File.expand_path('../test_files', __dir__)
-  CONFIG_FILE  = File.join(TEST_DIR, 'config_test.yml')
+  # Создаем константу для .example файла на основе сгенерированной базовым классом
   EXAMPLE_FILE = "#{CONFIG_FILE}.example"
 
   def setup
@@ -19,8 +16,7 @@ class ConfigTest < Minitest::Test
 
   def teardown
     clean_files
-    FileUtils.rm_rf(TEST_DIR) if Dir.exist?(TEST_DIR) && Dir.empty?(TEST_DIR)
-    ENV.delete('CONFIG_PATH')
+    super # Вызывает базовый teardown, который удалит папки и очистит ENV['CONFIG_PATH']
   end
 
   # --- ТЕСТЫ ---
