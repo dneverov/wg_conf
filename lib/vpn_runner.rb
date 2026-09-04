@@ -40,6 +40,11 @@ class VpnRunner
 
     # Проверяет активность сервиса И реальное прохождение трафика через него
     def connection_active?
+      # Если мы в режиме теста, смотрим на специальный флаг из ENV
+      if ENV['TEST_ENV'] == 'true'
+        return ENV['MOCK_VPN_ACTIVE'] == 'true'
+      end
+
       # 1. Сначала проверяем, запущен ли сам сервис systemd
       # Перенаправляем stdout/stderr в /dev/null, чтобы команда не мусорила в консоль
       service_active = execute_command("systemctl is-active '#{Config.vpn_service}*' > /dev/null 2>&1")
