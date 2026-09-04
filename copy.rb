@@ -1,4 +1,3 @@
-require_relative 'lib/config'
 require_relative 'lib/copier'
 
 # 1. Check that a file name is sent
@@ -17,7 +16,6 @@ target_name  = ARGV[1]
 
 copier = Copier.new
 
-# abort("\n\nHold on for now")
 puts "Attempting to copy #{source_name} to system folder..."
 
 copier.copy_config_file(source_name, target_name, show_log: true, instruction: true)
