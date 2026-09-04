@@ -12,7 +12,7 @@ Config.check_root_privileges
 
 # 2. Get the file name
 source_name = ARGV[0]
-target_name  = ARGV[1]
+target_name = ARGV[1]
 
 copier = Copier.new
 
