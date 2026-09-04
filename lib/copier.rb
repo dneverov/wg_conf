@@ -1,6 +1,7 @@
-class Copier
-  require_relative 'namer'
+require_relative 'config'
+require_relative 'namer'
 
+class Copier
   attr_reader :source_dir, :target_dir
 
   def initialize

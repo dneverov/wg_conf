@@ -1,15 +1,14 @@
-require 'minitest/autorun'
-require 'fileutils'
-require 'stringio'
-require_relative '../../lib/config'
+require_relative 'unit_test_case'
 require_relative '../../lib/vpn_runner'
 
-class VpnRunnerTest < Minitest::Test
-  TEST_DIR    = File.expand_path('../test_files_vpn', __dir__)
-  TARGET_MOCK = File.join(TEST_DIR, 'target_mock')
+class VpnRunnerTest < UnitTestCase
+  setup_unit_paths 'vpn'
+
+  # Для обратной совместимости со старыми тестами
+  TARGET_MOCK = TXT_MOCK_DIR
 
   def setup
-    FileUtils.mkdir_p(TARGET_MOCK)
+    super # Вызываем базовый setup для создания папок
 
     # 1. Безопасно глушим Config
     replace_method(Config, :target_dir, :orig_target) { TARGET_MOCK }
@@ -26,19 +25,18 @@ class VpnRunnerTest < Minitest::Test
     end
 
     # Глушим puts, чтобы лог тестов оставался чистым
-    @original_stdout = $stdout
-    $stdout = StringIO.new
+    capture_stdout!
   end
 
   def teardown
     # Возвращаем оригинальный вывод системе
-    $stdout = @original_stdout
+    restore_stdout!
 
     # 3. Восстанавливаем оригинальные методы из файлов lib/
     restore_method(Config, :target_dir, :orig_target)
     restore_method(VpnRunner, :execute_command, :orig_execute)
 
-    FileUtils.rm_rf(TEST_DIR)
+    super # Вызываем базовый teardown для очистки папок
   end
 
   # --- ТЕСТЫ ---
@@ -52,21 +50,15 @@ class VpnRunnerTest < Minitest::Test
   end
 
   def test_automatically_picks_latest_config_if_none_provided
-    old_file    = File.join(TARGET_MOCK, 'wg2_old_config.conf')
-    latest_file = File.join(TARGET_MOCK, 'wg2_UK_lon_S3.conf')
+    old_file    = 'wg2_old_config.conf'
+    latest_file = 'wg2_UK_lon_S3.conf'
 
-    # Создаем два файла
-    File.write(old_file,    'dummy old')
-    File.write(latest_file, 'dummy latest')
+    # Так как час — это 1/24 часть дня, передаем days_old как дробное число!
+    create_mock_config(TARGET_MOCK, old_file,    days_old: 1.0/24)
+    create_mock_config(TARGET_MOCK, latest_file, days_old: 0)
 
-    # Искусственно старим один из них на час назад
-    FileUtils.touch(old_file,    mtime: Time.now - 3600)
-    FileUtils.touch(latest_file, mtime: Time.now)
-
-    # Передаем show_status: true
     assert VpnRunner.run!(show_status: true)
 
-    # Скрипт должен выбрать именно самый свежий файл, проигнорировав старый
     assert_includes @executed_commands, "systemctl start awg-quick@wg2_UK_lon_S3.service"
     assert_includes @executed_commands, "awg show wg2_UK_lon_S3"
     refute_includes @executed_commands, "systemctl start awg-quick@wg2_old_config.service"
@@ -108,36 +100,4 @@ class VpnRunnerTest < Minitest::Test
       true
     end
   end
-
-  private
-
-    # Универсальные хелперы, которые работают на уровне singleton_class
-    def replace_method(klass, original_name, backup_name, &block)
-      klass.singleton_class.class_eval do
-        # Проверяем и публичные, и приватные методы для бэкапа
-        is_private = private_method_defined?(original_name)
-        alias_method backup_name, original_name if method_defined?(original_name) || is_private
-
-        define_method(original_name, &block)
-
-        # Если оригинальный метод был приватным, сохраняем эту приватность и для заглушки
-        private original_name if is_private
-      end
-    end
-
-    def restore_method(klass, original_name, backup_name)
-      klass.singleton_class.class_eval do
-        is_private = private_method_defined?(backup_name)
-
-        if method_defined?(backup_name) || is_private
-          remove_method original_name
-          alias_method original_name, backup_name
-
-          # Явно возвращаем методу статус private, если он был таким изначально
-          private original_name if is_private
-
-          remove_method backup_name
-        end
-      end
-    end
 end

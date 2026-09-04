@@ -58,8 +58,12 @@ class Config
         # Он выполнит: sudo ruby vpn_run.rb -s (сохраняя все аргументы)
         exec('sudo', 'ruby', $0, *ARGV)
       else
+        script_name  = File.basename($0)
+        current_args = ARGV.join(' ')
+
         puts "Примечание: Скрипт запущен без прав суперпользователя."
-        puts "Если целевая папка защищена от записи, может потребоваться: sudo ruby #{File.basename($0)}"
+        puts "Если целевая папка защищена от записи, может потребоваться:"
+        puts "  sudo ruby #{script_name} #{current_args}".rstrip
         puts "-" * 40
       end
     rescue SystemCallError

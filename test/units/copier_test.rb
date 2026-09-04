@@ -1,28 +1,36 @@
-require 'minitest/autorun'
-require 'fileutils'
-
-require_relative '../../lib/config'
+require_relative 'unit_test_case'
 require_relative '../../lib/namer'
 # Подключаем тестируемый класс
 require_relative '../../lib/copier'
 
-class CopierTest < Minitest::Test
+class CopierTest < UnitTestCase
+  # Генерируем константы путей, если они понадобятся, и настраиваем YAML-конфиг
+  setup_unit_paths 'copier'
+
   def setup
-    # Подставляем заглушки
-    mock_classes!
+    super # Вызывает базовый setup для подготовки папок и YAML
+
+    # Подставляем заглушки, используя унаследованные из базы хелперы replace_method
+    replace_method(Config, :source_dir, :orig_source) { '/mock/source' }
+    replace_method(Config, :target_dir, :orig_target) { '/mock/target' }
+    replace_method(Namer, :new_config_name, :orig_name) { |source| "mocked_#{source}" }
 
     @copier = Copier.new
 
-    # Перехватываем вывод puts, чтобы тесты не спамили в консоль
-    @original_stdout = $stdout
-    $stdout = StringIO.new
+    # Глушим puts одной короткой базовой командой
+    capture_stdout!
   end
 
   def teardown
-    $stdout = @original_stdout
+    # Возвращаем вывод системе
+    restore_stdout!
 
-    # Чистим за собой
-    restore_classes!
+    # Восстанавливаем оригинальные методы из файлов lib/
+    restore_method(Config, :source_dir, :orig_source)
+    restore_method(Config, :target_dir, :orig_target)
+    restore_method(Namer, :new_config_name, :orig_name)
+
+    super # Вызывает базовый teardown для очистки папок на диске
   end
 
   # --- ТЕСТЫ ---
@@ -72,11 +80,8 @@ class CopierTest < Minitest::Test
   def test_rename_and_copy_uses_namer_if_target_is_nil
     File.stub :exist?, true do
       @copier.stub :system_copy, true do
-        # Dynamically stub the real Namer class method
-        Namer.stub :new_config_name, "mocked_amnezia.conf" do
-          result = @copier.rename_and_copy('amnezia.conf')
-          assert_equal 'mocked_amnezia.conf', result
-        end
+        result = @copier.rename_and_copy('amnezia.conf')
+        assert_equal 'mocked_amnezia.conf', result
       end
     end
   end
@@ -118,40 +123,4 @@ class CopierTest < Minitest::Test
       end
     end
   end
-
-  private
-
-    # Хелпер для создания заглушки
-    def replace_method(klass, original_name, backup_name, &block)
-      klass.singleton_class.class_eval do
-        alias_method backup_name, original_name if method_defined?(original_name)
-        define_method(original_name, &block)
-      end
-    end
-
-    # Хелпер для восстановления оригинального метода
-    def restore_method(klass, original_name, backup_name)
-      klass.singleton_class.class_eval do
-        if method_defined?(backup_name)
-          remove_method original_name
-          alias_method original_name, backup_name
-          remove_method backup_name
-        end
-      end
-    end
-
-    # Безопасно сохраняем оригинальные методы и подставляем заглушки
-    def mock_classes!
-      replace_method(Config, :source_dir, :orig_source) { '/mock/source' }
-      replace_method(Config, :target_dir, :orig_target) { '/mock/target' }
-      replace_method(Namer, :new_config_name, :orig_name) { |source| "mocked_#{source}" }
-    end
-
-    # Возвращаем оригинальные методы на место, предварительно удаляя заглушки
-    # Добавляем remove_method, чтобы убрать варнинги "method redefined"
-    def restore_classes!
-      restore_method(Config, :source_dir, :orig_source)
-      restore_method(Config, :target_dir, :orig_target)
-      restore_method(Namer, :new_config_name, :orig_name)
-    end
 end

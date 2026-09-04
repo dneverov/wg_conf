@@ -1,27 +1,7 @@
-require 'minitest/autorun'
-require 'fileutils'
-require 'open3'
-require 'yaml'
-require_relative '../../lib/config'
+require_relative 'integration_test_case'
 
-class VpnRunScriptTest < Minitest::Test
-  SCRIPT_PATH = File.expand_path('../../vpn_run.rb', __dir__)
-  TEST_DIR    = File.expand_path('../test_files_integration_vpn', __dir__)
-  CONFIG_FILE = File.join(TEST_DIR, 'config_test.yml')
-  TARGET_MOCK = File.join(TEST_DIR, 'target_mock')
-
-  def setup
-    FileUtils.mkdir_p(TEST_DIR)
-    FileUtils.mkdir_p(TARGET_MOCK)
-
-    # Записываем тестовую конфигурацию, чтобы раннер знал, где искать .conf файлы
-    hash = { 'config' => { 'target_dir' => TARGET_MOCK } }
-    File.write(CONFIG_FILE, hash.to_yaml)
-  end
-
-  def teardown
-    FileUtils.rm_rf(TEST_DIR)
-  end
+class VpnRunScriptTest < IntegrationTestCase
+  setup_integration_paths 'vpn_run.rb', 'vpn'
 
   def test_script_shows_help
     stdout, _, status = run_script("-h")
@@ -95,26 +75,8 @@ class VpnRunScriptTest < Minitest::Test
 
   private
 
-    # Хелпер для быстрого создания фейковых конфигов
+    # Проксируем вызов в базовый класс
     def create_mock_config(name = 'wg2_chi_san.conf', content = 'dummy')
-      File.write(File.join(TARGET_MOCK, name), content)
-    end
-
-    # Хелпер для запуска vpn_run.rb в изолированном подпроцессе
-    def run_script(*args)
-      # Передаем переменные окружения: 
-      # TEST_ENV: чтобы заблокировать реальные системные cp/systemctl
-      # CONFIG_PATH: чтобы скрипт читал наш тестовый конфиг с диска
-      env = { 
-        'TEST_ENV' => 'true', 
-        'CONFIG_PATH' => CONFIG_FILE
-      }
-
-      # Важно: Так как в vpn_run.rb мы проверяем Process.uid == 0,
-      # а тесты запускаются обычным пользователем, нам нужно симулировать, что мы уже под root.
-      # Для этого в тестах мы временно подменим метод Process.uid на уровне подпроцесса, 
-      # если бы запускали через специальную команду. Но проще в vpn_run.rb добавить проверку на TEST_ENV!
-
-      Open3.capture3(env, 'ruby', SCRIPT_PATH, *args)
+      super(self.class::TARGET_MOCK, name, content: content)
     end
 end
