@@ -1,3 +1,4 @@
 config:
   source_dir: /home/username/Downloads/amnezia_wg
   target_dir: /home/username/Downloads/1
+  ping_host: "8.8.8.8"
