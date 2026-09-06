@@ -1,6 +1,9 @@
 require_relative 'config'
+require_relative 'system_executor'
 
 class VpnRunner
+  extend SystemExecutor # Подмешивает execute_command
+
   class << self
     def run!(config_name = nil, show_status: false)
       target_dir  = Config.target_dir
@@ -39,17 +42,6 @@ class VpnRunner
     end
 
     private
-
-      # Обертка для всех системных вызовов
-      def execute_command(cmd)
-        # Если скрипт запущен внутри интеграционного теста, мы просто выводим команду в stdout
-        if ENV['TEST_ENV'] == 'true'
-          puts "[EXEC] #{cmd}"
-          true
-        else
-          system(cmd)
-        end
-      end
 
       def get_interface_name(target_dir, config_name = nil)
         # Если имя конфига не передано, ищем первый доступный .conf файл в целевой папке

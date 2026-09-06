@@ -2,19 +2,15 @@
 
 Copies Amnezia WG configuration files.
 
-## FYI
+## How To Use
 
-For start or switch Amnezia WG config you can use [awg-switch](https://github.com/dneverov/awg-switch).
+### `copy.rb`
 
-## How To Use:
+Copies a single config file.
 
-### `copy.rb` -- Single config file
 ```bash
 ruby copy.rb ConfigFileName.conf
-```
-
-Or
-```shell
+# OR
 ruby copy.rb ConfigFileName.conf NewFileName.conf
 ```
 
@@ -23,13 +19,16 @@ E.g.
 ruby copy.rb SerbiaBelgradeS3.conf wg2_ser_bel_S3.conf
 ```
 
-### `dir.rb` -- Copies config files from Dir
+### `dir.rb`
+
+Copies config files from a `source_dir` into a `target_dir`. (Directories are defined in the _config.yml_ file).
+
 ```bash
 # By default copies today's files (same as `ruby dir.rb -p 0`)
 ruby dir.rb
-# OR
+# OR files added in the last 3 days
 ruby dir.rb -p 3
-# OR
+# OR all files
 ruby dir.rb -p all
 ```
 
@@ -49,7 +48,7 @@ sudo ruby vpn_run.rb
 ruby vpn_run.rb
 # OR
 ruby vpn_run.rb wg2_net_ams_H16
-# To stop services:
+# To STOP services:
 ruby vpn_run.rb -s
 ```
 
@@ -58,28 +57,44 @@ Type key `-h` for help:
 ruby vpn_run.rb -h
 ```
 
-## Test:
+### `vpn_check.rb`
+
+Checks the VPN connection.
 
 ```sh
-ruby test/units/namer_test.rb
+ruby vpn_check.rb
 ```
 
-Or individual test:
-```shell
+## Test
+
+```sh
+# Singe file
+ruby test/units/namer_test.rb
+# OR individual test
 ruby test/units/namer_test.rb -n test_country_not_in_mapping
 ```
 
-### Using Rake:
+### Using Rake
 <!--
 - `rake` или `rake test` — запустит вообще все тесты (и юниты, и интеграционные)
 - `rake test:units` — запустит тесты только из папки `test/units/`
 - `rake test:integration` — запустит тесты только из папки `test/integration/`.
 -->
 
-- `rake` or `rake test` — will run all tests (both unit and integration)
-- `rake test:units` — will run tests only from the `test/units/` directory
-- `rake test:integration` — will run tests only from the `test/integration/`.
+```sh
+# Run all tests
+rake test
+# OR
+rake
+# Run tests only from the `test/units/` directory
+rake test:units
+# Run tests only from the `test/integration/`
+rake test:integration
+```
 
+## Related project
+
+You can also use [awg-switch](https://github.com/dneverov/awg-switch) to start or switch the Amnezia WG configuration.
 
 ## TODO
 

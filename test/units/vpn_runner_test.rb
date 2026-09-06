@@ -19,7 +19,7 @@ class VpnRunnerTest < UnitTestCase
     # Создаем ЛОКАЛЬНУЮ переменную. Она гарантированно пробросится внутрь блока class_eval
     commands_array = @executed_commands 
 
-    replace_method(VpnRunner, :execute_command, :orig_execute) do |cmd|
+    replace_method(VpnRunner, :execute_command, :orig_execute) do |cmd, **options|
       commands_array << cmd # Пишем в локальную переменную, контекст её видит!
       true
     end
