@@ -53,7 +53,7 @@ class VpnRunner
       # 2. Пытаемся динамически узнать имя поднятого интерфейса.
       # systemctl status выведет что-то вроде "awg-quick@wg2_rus_mos_K5.service"
       # Мы вытаскиваем то, что идет после знака @
-      status_output = `systemctl list-units '#{Config.vpn_service}*' --state=active`
+      status_output = read_system_output("systemctl list-units '#{Config.vpn_service}*' --state=active")
       interface_name = status_output.match(/#{Config.vpn_service}([^\s\.]+)/)&.captures&.first
 
       return false if interface_name.nil?
@@ -65,15 +65,27 @@ class VpnRunner
 
     private
 
-      # Обертка для всех системных вызовов
+      # Обертка для мутирующих команд (system)
       def execute_command(cmd)
-        # Если скрипт запущен внутри интеграционного теста, мы просто выводим команду в stdout
         if ENV['TEST_ENV'] == 'true'
-          puts "[EXEC] #{cmd}"
-          true
-        else
-          system(cmd)
+          # Если явно передали флаг сбоя — возвращаем false
+          return false if ENV['MOCK_VPN_FAIL'] == 'true'
+          puts "[EXEC] #{cmd}" # просто выводим команду в stdout
+          return true
         end
+        system(cmd)
+      end
+
+      # Обертка для инспектирующих команд (бэктики)
+      def read_system_output(cmd)
+        if ENV['TEST_ENV'] == 'true'
+          # Если в тесте симулируем, что VPN выключен — возвращаем пустую строку
+          return "" if ENV['MOCK_VPN_FAIL'] == 'true'
+
+          # В режиме теста возвращаем строку с фейковым интерфейсом для парсинга
+          return "awg-quick@wg2_mock_interface.service loaded active running"
+        end
+        `#{cmd}`
       end
 
       def get_interface_name(target_dir, config_name = nil)
