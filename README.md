@@ -52,7 +52,7 @@ sudo ruby vpn_run.rb
 ruby vpn_run.rb
 # OR
 ruby vpn_run.rb wg2_net_ams_H16
-# To stop services:
+# To STOP services:
 ruby vpn_run.rb -s
 ```
 
@@ -61,12 +61,20 @@ Type key `-h` for help:
 ruby vpn_run.rb -h
 ```
 
+### `vpn_check.rb`
+
+Checks the VPN connection.
+
+```sh
+ruby vpn_check.rb
+```
+
 ## Test
 
 ```sh
 # Singe file
 ruby test/units/namer_test.rb
-# Or individual test
+# OR individual test
 ruby test/units/namer_test.rb -n test_country_not_in_mapping
 ```
 
