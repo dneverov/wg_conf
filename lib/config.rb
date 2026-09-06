@@ -12,15 +12,15 @@ class Config
 
   class << self
     def source_dir
-      expand_path(@data.dig('config', 'source_dir') || '')
+      expand_path fetch_config('source_dir', default: '')
     end
 
     def target_dir
-      expand_path(@data.dig('config', 'target_dir') || '')
+      expand_path fetch_config('target_dir', default: '')
     end
 
     def ping_host
-      @data.dig('config', 'ping_host') || '1.1.1.1'
+      fetch_config('ping_host', default: '1.1.1.1')
     end
 
     # Публичный хелпер для получения префикса сервиса
@@ -76,6 +76,11 @@ class Config
     end
 
     private
+
+      # Универсальный хелпер для извлечения настроек
+      def fetch_config(key, default:)
+        @data.dig('config', key) || default
+      end
 
       # File.expand_path автоматически превратит '~/' в '/home/user/'
       def expand_path(path)
