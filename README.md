@@ -58,28 +58,32 @@ Type key `-h` for help:
 ruby vpn_run.rb -h
 ```
 
-## Test:
+## Test
 
 ```sh
+# Singe file
 ruby test/units/namer_test.rb
-```
-
-Or individual test:
-```shell
+# Or individual test
 ruby test/units/namer_test.rb -n test_country_not_in_mapping
 ```
 
-### Using Rake:
+### Using Rake
 <!--
 - `rake` или `rake test` — запустит вообще все тесты (и юниты, и интеграционные)
 - `rake test:units` — запустит тесты только из папки `test/units/`
 - `rake test:integration` — запустит тесты только из папки `test/integration/`.
 -->
 
-- `rake` or `rake test` — will run all tests (both unit and integration)
-- `rake test:units` — will run tests only from the `test/units/` directory
-- `rake test:integration` — will run tests only from the `test/integration/`.
-
+```sh
+# Run all tests
+rake test
+# OR
+rake
+# Run tests only from the `test/units/` directory
+rake test:units
+# Run tests only from the `test/integration/`
+rake test:integration
+```
 
 ## TODO
 
