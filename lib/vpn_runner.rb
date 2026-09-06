@@ -1,6 +1,9 @@
 require_relative 'config'
+require_relative 'system_executor'
 
 class VpnRunner
+  extend SystemExecutor # Подмешивает execute_command
+
   class << self
     def run!(config_name = nil, show_status: false)
       target_dir  = Config.target_dir
@@ -39,17 +42,6 @@ class VpnRunner
     end
 
     private
-
-      # Обертка для мутирующих команд (system)
-      def execute_command(cmd)
-        if ENV['TEST_ENV'] == 'true'
-          # Если явно передали флаг сбоя — возвращаем false
-          return false if ENV['MOCK_VPN_FAIL'] == 'true'
-          puts "[EXEC] #{cmd}" # просто выводим команду в stdout
-          return true
-        end
-        system(cmd)
-      end
 
       def get_interface_name(target_dir, config_name = nil)
         # Если имя конфига не передано, ищем первый доступный .conf файл в целевой папке

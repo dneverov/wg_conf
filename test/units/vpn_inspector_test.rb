@@ -15,7 +15,8 @@ class VpnInspectorTest < UnitTestCase
     mock_flags  = { service: true, ping: true }
     @mock_flags = mock_flags # Сохраняем ссылку, чтобы менять флаги из самих тест-методов
 
-    replace_method(VpnInspector, :execute_command, :orig_execute) do |cmd|
+    # Принимаем и саму команду (cmd), и любые именованные аргументы (**options)
+    replace_method(VpnInspector, :execute_command, :orig_execute) do |cmd, **options|
       commands_array << cmd
 
       if cmd.include?('systemctl is-active')
@@ -32,7 +33,7 @@ class VpnInspectorTest < UnitTestCase
     interface = expected_interface
 
     # Используем хелперы service_prefix и expected_interface
-    replace_method(VpnInspector, :read_system_output, :orig_read) do |cmd|
+    replace_method(VpnInspector, :read_system_output, :orig_read) do |cmd, **options|
       commands_array << cmd
       "#{prefix}#{interface}.service loaded active running"
     end
