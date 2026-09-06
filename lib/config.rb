@@ -20,7 +20,7 @@ class Config
     end
 
     def ping_host
-      expand_path(@data.dig('config', 'ping_host') || '1.1.1.1')
+      @data.dig('config', 'ping_host') || '1.1.1.1'
     end
 
     # Публичный хелпер для получения префикса сервиса
