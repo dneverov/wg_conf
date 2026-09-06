@@ -27,7 +27,8 @@ class VpnCheckScriptTest < IntegrationTestCase
       env = {
         'TEST_ENV' => 'true',
         'CONFIG_PATH' => self.class::CONFIG_FILE,
-        'MOCK_VPN_ACTIVE' => active.to_s
+        # Если active равен false (тест ошибки), то выставляем фейковый сбой в 'true'
+        'MOCK_VPN_FAIL' => active ? 'false' : 'true'
       }
       Open3.capture3(env, 'ruby', self.class::SCRIPT_PATH)
     end
