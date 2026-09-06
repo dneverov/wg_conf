@@ -22,7 +22,7 @@ class VpnInspector
 
       # 3. Делаем проверочный пинг строго ЧЕРЕЗ этот интерфейс
       # -c 1 (один пакет), -W 2 (таймаут 2 секунды, если ТСПУ глушит пакеты)
-      execute_command("ping -c 1 -W 2 -I #{interface_name} 1.1.1.1 > /dev/null 2>&1", silent: true)
+      execute_command("ping -c 1 -W 2 -I #{interface_name} #{Config.ping_host} > /dev/null 2>&1", silent: true)
     end
   end
 end

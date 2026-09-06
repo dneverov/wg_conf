@@ -52,7 +52,7 @@ class VpnInspectorTest < UnitTestCase
 
     assert_includes @commands_executed, "systemctl is-active '#{service_prefix}*' > /dev/null 2>&1"
     assert_includes @commands_executed, "systemctl list-units '#{service_prefix}*' --state=active"
-    assert_includes @commands_executed, "ping -c 1 -W 2 -I #{expected_interface} 1.1.1.1 > /dev/null 2>&1"
+    assert_includes @commands_executed, "ping -c 1 -W 2 -I #{expected_interface} #{Config.ping_host} > /dev/null 2>&1"
   end
 
   def test_returns_false_instantly_if_service_is_inactive
@@ -73,7 +73,7 @@ class VpnInspectorTest < UnitTestCase
     refute VpnInspector.connection_active?
 
     assert_includes @commands_executed, "systemctl is-active '#{service_prefix}*' > /dev/null 2>&1"
-    assert_includes @commands_executed, "ping -c 1 -W 2 -I #{expected_interface} 1.1.1.1 > /dev/null 2>&1"
+    assert_includes @commands_executed, "ping -c 1 -W 2 -I #{expected_interface} #{Config.ping_host} > /dev/null 2>&1"
   end
 
   private
