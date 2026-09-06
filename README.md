@@ -2,10 +2,6 @@
 
 Copies Amnezia WG configuration files.
 
-## FYI
-
-For start or switch Amnezia WG config you can use [awg-switch](https://github.com/dneverov/awg-switch).
-
 ## How To Use
 
 ### `copy.rb`
@@ -95,6 +91,10 @@ rake test:units
 # Run tests only from the `test/integration/`
 rake test:integration
 ```
+
+## Related project
+
+You can also use [awg-switch](https://github.com/dneverov/awg-switch) to start or switch the Amnezia WG configuration.
 
 ## TODO
 
