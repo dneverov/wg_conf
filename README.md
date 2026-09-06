@@ -6,15 +6,15 @@ Copies Amnezia WG configuration files.
 
 For start or switch Amnezia WG config you can use [awg-switch](https://github.com/dneverov/awg-switch).
 
-## How To Use:
+## How To Use
 
-### `copy.rb` -- Single config file
+### `copy.rb`
+
+Copies a single config file.
+
 ```bash
 ruby copy.rb ConfigFileName.conf
-```
-
-Or
-```shell
+# OR
 ruby copy.rb ConfigFileName.conf NewFileName.conf
 ```
 
@@ -23,13 +23,16 @@ E.g.
 ruby copy.rb SerbiaBelgradeS3.conf wg2_ser_bel_S3.conf
 ```
 
-### `dir.rb` -- Copies config files from Dir
+### `dir.rb`
+
+Copies config files from a `source_dir` into a `target_dir`. (Directories are defined in the _config.yml_ file).
+
 ```bash
 # By default copies today's files (same as `ruby dir.rb -p 0`)
 ruby dir.rb
-# OR
+# OR files added in the last 3 days
 ruby dir.rb -p 3
-# OR
+# OR all files
 ruby dir.rb -p all
 ```
 
