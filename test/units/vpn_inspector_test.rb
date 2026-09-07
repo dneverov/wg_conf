@@ -76,6 +76,17 @@ class VpnInspectorTest < UnitTestCase
     assert_includes @commands_executed, "ping -c 1 -W 2 -I #{expected_interface} #{Config.ping_host} > /dev/null 2>&1"
   end
 
+  def test_detailed_status_returns_full_diagnostic_hash
+    status = VpnInspector.detailed_status
+
+    # Проверяем, что метод возвращает правильные ключи и типы данных
+    assert_equal service_prefix, status[:vpn_service]
+    assert_equal true, status[:service_active]
+    assert_equal expected_interface, status[:interface_name]
+    assert_equal Config.ping_host, status[:ping_host]
+    assert_equal true, status[:ping_successful]
+  end
+
   private
 
     # Тип VPN по умолчанию в коде
