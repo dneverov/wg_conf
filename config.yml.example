@@ -1,3 +1,4 @@
 config:
-  source_dir: /home/username/Downloads/amnezia_wg
-  target_dir: /home/username/Downloads/1
+  source_dir: /home/USERNAME/Downloads/amnezia_wg_configs
+  target_dir: /etc/amnezia/amneziawg
+  ping_host: 1.1.1.1
