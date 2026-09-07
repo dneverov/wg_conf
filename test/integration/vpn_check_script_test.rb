@@ -20,16 +20,27 @@ class VpnCheckScriptTest < IntegrationTestCase
     assert_match(/Проверка VPN-соединения... ОШИБКА/, stdout)
   end
 
+  def test_script_shows_verbose_diagnostic_report_with_flag_v
+    # Запускаем скрипт с флагом -v в успешном режиме
+    stdout, _, status = run_script_with_mock(active: true, args: ['-v'])
+
+    assert status.success?
+    assert_match(/=== ДИАГНОСТИКА VPN СОЕДИНЕНИЯ ===/, stdout)
+    assert_match(/Статус службы systemd  : АКТИВЕН/, stdout)
+    assert_match(/Сетевой интерфейс      : wg2_mock_interface/, stdout)
+    assert_match(/Прохождение пинга      : УСПЕШНО/, stdout)
+  end
+
   private
 
     # Локальный хелпер, который пробрасывает состояние фейкового VPN в подпроцесс
-    def run_script_with_mock(active:)
+    def run_script_with_mock(active:, args: [])
       env = {
         'TEST_ENV' => 'true',
         'CONFIG_PATH' => self.class::CONFIG_FILE,
         # Если active равен false (тест ошибки), то выставляем фейковый сбой в 'true'
         'MOCK_VPN_FAIL' => active ? 'false' : 'true'
       }
-      Open3.capture3(env, 'ruby', self.class::SCRIPT_PATH)
+      Open3.capture3(env, 'ruby', self.class::SCRIPT_PATH, *args)
     end
 end
