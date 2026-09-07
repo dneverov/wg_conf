@@ -16,6 +16,9 @@ OptionParser.new do |opts|
   end
 end.parse!
 
+# Переменная -- финальный результат проверки для exit-кода
+is_active = false
+
 # Если запрошен подробный режим, выводим полную карту параметров
 if options[:verbose]
   status = VpnInspector.detailed_status
@@ -27,12 +30,17 @@ if options[:verbose]
   puts "Хост проверки трафика  : #{status[:ping_host]}"
   puts "Прохождение пинга      : #{status[:ping_successful] ? 'УСПЕШНО' : 'СБОЙ / БЛОКИРОВКА ТСПУ'}"
   puts "=" * 34
+
+  is_active = status[:ping_successful]
+else
+  # Если режим не подробный — вызываем легковесный метод напрямую
+  is_active = VpnInspector.connection_active?
 end
 
-# Финальный лаконичный вывод для совместимости
+# Финальный лаконичный вывод
 print "Проверка VPN-соединения... "
 
-if VpnInspector.connection_active?
+if is_active
   puts "РАБОТАЕТ (Трафик успешно проходит)"
   exit 0
 else
