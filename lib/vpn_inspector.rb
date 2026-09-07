@@ -24,5 +24,25 @@ class VpnInspector
       # -c 1 (один пакет), -W 2 (таймаут 2 секунды, если ТСПУ глушит пакеты)
       execute_command("ping -c 1 -W 2 -I #{interface_name} #{Config.ping_host} > /dev/null 2>&1", silent: true)
     end
+
+    # Собирает полную карту состояния VPN для развернутого вывода
+    def detailed_status
+      service_pattern = "#{Config.vpn_service}*"
+      service_active  = execute_command("systemctl is-active '#{service_pattern}' > /dev/null 2>&1", silent: true)
+
+      status_output   = read_system_output("systemctl list-units '#{service_pattern}' --state=active")
+      interface_name  = status_output.match(/#{Config.vpn_service}([^\s\.]+)/)&.captures&.first
+
+      # Пинг выполняем только если интерфейс физически существует
+      ping_ok = interface_name ? execute_command("ping -c 1 -W 2 -I #{interface_name} #{Config.ping_host} > /dev/null 2>&1", silent: true) : false
+
+      {
+        vpn_service: Config.vpn_service,
+        service_active: service_active,
+        interface_name: interface_name,
+        ping_host: Config.ping_host,
+        ping_successful: ping_ok
+      }
+    end
   end
 end
