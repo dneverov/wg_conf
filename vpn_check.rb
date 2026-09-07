@@ -16,26 +16,24 @@ OptionParser.new do |opts|
   end
 end.parse!
 
-# Переменная -- финальный результат проверки для exit-кода
-is_active = false
+is_active =
+  if options[:verbose]
+    # Если запрошен подробный режим, выводим полную карту параметров
+    status = VpnInspector.detailed_status
 
-# Если запрошен подробный режим, выводим полную карту параметров
-if options[:verbose]
-  status = VpnInspector.detailed_status
+    puts "=== ДИАГНОСТИКА VPN СОЕДИНЕНИЯ ==="
+    puts "Шаблон сервиса systemd : #{status[:vpn_service]}*"
+    puts "Статус службы systemd  : #{status[:service_active] ? 'АКТИВЕН' : 'ВЫКЛЮЧЕН / НЕ НАЙДЕН'}"
+    puts "Сетевой интерфейс      : #{status[:interface_name] || 'НЕ ПОДНЯТ'}"
+    puts "Хост проверки трафика  : #{status[:ping_host]}"
+    puts "Прохождение пинга      : #{status[:ping_successful] ? 'УСПЕШНО' : 'СБОЙ / БЛОКИРОВКА ТСПУ'}"
+    puts "=" * 34
 
-  puts "=== ДИАГНОСТИКА VPN СОЕДИНЕНИЯ ==="
-  puts "Шаблон сервиса systemd : #{status[:vpn_service]}*"
-  puts "Статус службы systemd  : #{status[:service_active] ? 'АКТИВЕН' : 'ВЫКЛЮЧЕН / НЕ НАЙДЕН'}"
-  puts "Сетевой интерфейс      : #{status[:interface_name] || 'НЕ ПОДНЯТ'}"
-  puts "Хост проверки трафика  : #{status[:ping_host]}"
-  puts "Прохождение пинга      : #{status[:ping_successful] ? 'УСПЕШНО' : 'СБОЙ / БЛОКИРОВКА ТСПУ'}"
-  puts "=" * 34
-
-  is_active = status[:ping_successful]
-else
-  # Если режим не подробный — вызываем легковесный метод напрямую
-  is_active = VpnInspector.connection_active?
-end
+    status[:ping_successful]
+  else
+    # Если режим не подробный — вызываем легковесный метод напрямую
+    VpnInspector.connection_active?
+  end
 
 # Финальный лаконичный вывод
 print "Проверка VPN-соединения... "
