@@ -37,6 +37,18 @@ Type key `-h` for help:
 ruby dir.rb -h
 ```
 
+### `list.rb`
+
+Shows available VPN configurations.
+
+```sh
+ruby list.rb
+# Sort by name (default)
+ruby list.rb -n
+# Sort by date (newest first)
+ruby list.rb -t
+```
+
 ### `vpn_run.rb`
 
 Starts AmneziaWG VPN using configs from a target directory.
