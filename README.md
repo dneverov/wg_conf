@@ -63,6 +63,8 @@ Checks the VPN connection.
 
 ```sh
 ruby vpn_check.rb
+# To show detailed info (keys: -v, --verbose)
+ruby vpn_check.rb -v
 ```
 
 ## Test
