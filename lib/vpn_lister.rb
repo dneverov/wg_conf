@@ -7,7 +7,7 @@ class VpnLister
       files = fetch_and_sort_files(sort_by)
       return "В папке конфигураций нет доступных VPN-интерфейсов." if files.empty?
 
-      format_columns(files, columns)
+      format_vertical_columns(files, columns)
     end
 
     private
@@ -36,6 +36,34 @@ class VpnLister
         items.each_slice(col_count) do |slice|
           # Форматируем каждый элемент строки под фиксированную ширину колонки
           lines << slice.map { |item| item.ljust(col_width) }.join.strip
+        end
+
+        lines.join("\n")
+      end
+
+      def format_vertical_columns(items, col_count)
+        max_len = items.map(&:length).max || 0
+        col_width = max_len + 3
+
+        # Рассчитываем, сколько строк нам понадобится (округление вверх)
+        row_count = (items.size.to_f / col_count).ceil
+
+        lines = []
+        # Итерируемся по строкам
+        row_count.times do |row_idx|
+          row_items = []
+
+          # Для каждой строки собираем элементы, которые должны стоять в разных колонках
+          col_count.times do |col_idx|
+            # Индекс элемента в плоском массиве при вертикальном заполнении
+            item_idx = col_idx * row_count + row_idx
+
+            if item_idx < items.size
+              row_items << items[item_idx].ljust(col_width)
+            end
+          end
+
+          lines << row_items.join.strip
         end
 
         lines.join("\n")
