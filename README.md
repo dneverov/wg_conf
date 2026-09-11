@@ -47,6 +47,8 @@ ruby list.rb
 ruby list.rb -n
 # Sort by date (newest first)
 ruby list.rb -t
+# Sort by date and display compact time (2 columns)
+ruby list.rb -d
 ```
 
 ### `vpn_run.rb`
