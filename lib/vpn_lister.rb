@@ -44,10 +44,13 @@ class VpnLister
 
       # 3. Шаг: Превращение структуры в плоские строки для колонок (с датой или без)
       def prepare_items(files, verbose_time)
+        # Считаем максимальную длину имени
+        max_name_len = files.map { |f| f[:name].length }.max || 0
+
         files.map do |item|
           if verbose_time
             formatted_time = item[:mtime].strftime('%Y-%m-%d %H:%M')
-            "#{item[:name]} [#{formatted_time}]"
+            "#{item[:name].ljust(max_name_len)} #{formatted_time}"
           else
             item[:name]
           end

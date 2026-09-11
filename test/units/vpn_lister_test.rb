@@ -60,6 +60,6 @@ class VpnListerTest < UnitTestCase
 
     # При 2 элементах и 2 колонках row_count = 1
     # Ожидаем, что они встанут в одну строку как две колонки
-    assert_match(/wg2_fresh \[2026-09-11 13:05\].*wg2_old \[2026-09-10 12:00\]/, lines[0])
+    assert_match(/wg2_fresh\s*2026-09-11 13:05.*wg2_old\s*2026-09-10 12:00/, output)
   end
 end

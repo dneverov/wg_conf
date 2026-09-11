@@ -67,8 +67,8 @@ class ListScriptTest < IntegrationTestCase
     stdout, _, status = run_script('-d')
 
     assert status.success?
-    assert_match(/wg2_fresh \[\d{4}-\d{2}-\d{2} \d{2}:\d{2}\]/, stdout)
-    assert_match(/wg2_old \[\d{4}-\d{2}-\d{2} \d{2}:\d{2}\]/,   stdout)
+    assert_match(/wg2_fresh \s*\d{4}-\d{2}-\d{2} \d{2}:\d{2}/, stdout)
+    assert_match(/wg2_old \s*\d{4}-\d{2}-\d{2} \d{2}:\d{2}/,   stdout)
   end
 
   private
