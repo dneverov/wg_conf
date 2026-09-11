@@ -9,12 +9,13 @@ class VpnLister
 
       sorted_files = sort_files(files, sort_by)
 
-      # Расчёт геометрии ячейки
+      # Вычисляем длину
       max_name_len = sorted_files.map { |f| f[:name].length }.max || 0
-      col_width    = max_name_len + (verbose_time ? 20 : 3) # 17 (дата+пробел) + 3 отступа ИЛИ просто 3 отступа
 
-      items        = prepare_items(sorted_files, max_name_len, verbose_time)
-      actual_cols  = verbose_time ? 2 : columns
+      # Получаем всю геометрию сетки одной строкой через деструктуризацию массива
+      col_width, actual_cols = determine_layout(max_name_len, columns, verbose_time)
+
+      items = prepare_items(sorted_files, max_name_len, verbose_time)
 
       # Передаем уже готовую col_width в метод сетки
       format_vertical_columns(items, actual_cols, col_width)
@@ -45,6 +46,17 @@ class VpnLister
         else
           # Сортировка по имени по умолчанию
           files.sort_by { |item| item[:name].downcase }
+        end
+      end
+
+      # Вычисляем параметры отображения на основе флага
+      def determine_layout(max_name_len, default_columns, verbose_time)
+        if verbose_time
+          # Ширина: имя + 1 пробел + 16 символов даты + 3 пробела отступа = max + 20
+          [max_name_len + 20, 2]
+        else
+          # Ширина: имя + 3 пробела отступа
+          [max_name_len + 3, default_columns]
         end
       end
 
