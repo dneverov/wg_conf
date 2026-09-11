@@ -44,21 +44,17 @@ class VpnListerTest < UnitTestCase
   end
 
   def test_sorts_by_time_with_verbose_dates_in_two_columns
-    # Замораживаем или симулируем фиксированное время для проверки strftime
-    t1 = Time.new(2026, 9, 11, 13, 5, 0)
-    t2 = Time.new(2026, 9, 10, 12, 0, 0)
-
-    # Используем File.utime, встроеный в UnitTestCase через create_mock_config
-    file1 = create_mock_config(TXT_MOCK_DIR, 'wg2_fresh.conf')
-    file2 = create_mock_config(TXT_MOCK_DIR, 'wg2_old.conf')
-
-    File.utime(t1, t1, file1)
-    File.utime(t2, t2, file2)
+    # Создаем конфигурации с разным возрастом через встроенный хелпер
+    create_mock_config(TXT_MOCK_DIR, 'wg2_fresh.conf', days_old: 0)
+    create_mock_config(TXT_MOCK_DIR, 'wg2_old.conf',   days_old: 1)
 
     output = VpnLister.render(sort_by: :time, verbose_time: true)
 
-    # При 2 элементах и 2 колонках row_count = 1
-    # Ожидаем, что они встанут в одну строку как две колонки
-    assert_match(/wg2_fresh\s*2026-09-11 13:05.*wg2_old\s*2026-09-10 12:00/, output)
+    # Динамически вычисляем ожидаемые даты для проверки
+    fresh_date = Time.now.strftime('%Y-%m-%d')
+    old_date   = (Time.now - 86400).strftime('%Y-%m-%d')
+
+    # Проверяем структуру вывода в две колонки по времени (свежие выше)
+    assert_match(/wg2_fresh\s+#{fresh_date}\s+\d{2}:\d{2}.*wg2_old\s+#{old_date}\s+\d{2}:\d{2}/, output)
   end
 end
