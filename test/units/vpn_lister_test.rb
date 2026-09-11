@@ -42,4 +42,24 @@ class VpnListerTest < UnitTestCase
     assert_equal "wg2_fresh    wg2_medium", lines[0].strip
     assert_equal "wg2_newer    wg2_old", lines[1].strip
   end
+
+  def test_sorts_by_time_with_verbose_dates_in_two_columns
+    # Замораживаем или симулируем фиксированное время для проверки strftime
+    t1 = Time.new(2026, 9, 11, 13, 5, 0)
+    t2 = Time.new(2026, 9, 10, 12, 0, 0)
+
+    # Используем File.utime, который встроен в наш UnitTestCase через create_mock_config
+    file1 = create_mock_config(TXT_MOCK_DIR, 'wg2_fresh.conf')
+    file2 = create_mock_config(TXT_MOCK_DIR, 'wg2_old.conf')
+
+    File.utime(t1, t1, file1)
+    File.utime(t2, t2, file2)
+
+    output = VpnLister.render(sort_by: :time, verbose_time: true)
+    lines = output.split("\n")
+
+    # При 2 элементах и 2 колонках row_count = 1
+    # Ожидаем, что они встанут в одну строку как две колонки
+    assert_match(/wg2_fresh \[2026-09-11 13:05\].*wg2_old \[2026-09-10 12:00\]/, lines[0])
+  end
 end

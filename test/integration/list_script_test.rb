@@ -59,6 +59,18 @@ class ListScriptTest < IntegrationTestCase
     assert_match(/wg2_newer.*wg2_old/,    lines[1])
   end
 
+  def test_script_shows_dates_with_details_flag
+    create_mock_config('wg2_fresh.conf', days_old: 0)
+    create_mock_config('wg2_old.conf',   days_old: 5)
+
+    # Передаем новый рабочий флаг -d
+    stdout, _, status = run_script('-d')
+
+    assert status.success?
+    assert_match(/wg2_fresh \[\d{4}-\d{2}-\d{2} \d{2}:\d{2}\]/, stdout)
+    assert_match(/wg2_old \[\d{4}-\d{2}-\d{2} \d{2}:\d{2}\]/,   stdout)
+  end
+
   private
 
     # Локальный хелпер-прокси, который автоматически подставляет TARGET_MOCK папку
