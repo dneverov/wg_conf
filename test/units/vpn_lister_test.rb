@@ -48,7 +48,7 @@ class VpnListerTest < UnitTestCase
     t1 = Time.new(2026, 9, 11, 13, 5, 0)
     t2 = Time.new(2026, 9, 10, 12, 0, 0)
 
-    # Используем File.utime, который встроен в наш UnitTestCase через create_mock_config
+    # Используем File.utime, встроеный в UnitTestCase через create_mock_config
     file1 = create_mock_config(TXT_MOCK_DIR, 'wg2_fresh.conf')
     file2 = create_mock_config(TXT_MOCK_DIR, 'wg2_old.conf')
 
@@ -56,7 +56,6 @@ class VpnListerTest < UnitTestCase
     File.utime(t2, t2, file2)
 
     output = VpnLister.render(sort_by: :time, verbose_time: true)
-    lines = output.split("\n")
 
     # При 2 элементах и 2 колонках row_count = 1
     # Ожидаем, что они встанут в одну строку как две колонки
