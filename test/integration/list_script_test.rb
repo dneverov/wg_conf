@@ -32,7 +32,7 @@ class ListScriptTest < IntegrationTestCase
     assert_match(/Доступные VPN-конфигурации:/, stdout)
 
     # Разбиваем вывод на строки, отсекая заголовки и разделители
-    lines = stdout.split("\n").select { |l| l.start_with?('wg2_') }
+    lines = parse_interface_lines(stdout)
 
     # [aut_vie, chi_san, deu_fra, rus_mos] при row_count = 2
     assert_match(/wg2_aut_vie.*wg2_deu_fra/, lines[0])
@@ -50,7 +50,7 @@ class ListScriptTest < IntegrationTestCase
 
     assert status.success?
 
-    lines = stdout.split("\n").select { |l| l.start_with?('wg2_') }
+    lines = parse_interface_lines(stdout)
 
     # Массив по времени: [fresh, newer, medium, old] при row_count = 2
     # Строка 0 -> fresh, medium
@@ -64,5 +64,10 @@ class ListScriptTest < IntegrationTestCase
     # Локальный хелпер-прокси, который автоматически подставляет TARGET_MOCK папку
     def create_mock_config(name, days_old: 0, content: 'dummy')
       super(self.class::TARGET_MOCK, name, days_old: days_old, content: content)
+    end
+
+    # Хелпер для очистки вывода и получения только строк с интерфейсами
+    def parse_interface_lines(stdout)
+      stdout.split("\n").select { |l| l.start_with?('wg2_') }
     end
 end
