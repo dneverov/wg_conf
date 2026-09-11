@@ -9,12 +9,9 @@ class VpnLister
 
       sorted_files = sort_files(files, sort_by)
 
-      # 1. Считаем максимальную длину голого имени ровно ОДИН раз на самом верху
+      # Расчёт геометрии ячейки
       max_name_len = sorted_files.map { |f| f[:name].length }.max || 0
-
-      # 2. Вычисляем точную ширину колонки: имя + пробел + (дата из 16 символов, если включена) + 3 пробела отступа
-      date_width = verbose_time ? 17 : 0 # 1 пробел + 16 символов самой даты
-      col_width  = max_name_len + date_width + 3
+      col_width    = max_name_len + (verbose_time ? 20 : 3) # 17 (дата+пробел) + 3 отступа ИЛИ просто 3 отступа
 
       items        = prepare_items(sorted_files, max_name_len, verbose_time)
       actual_cols  = verbose_time ? 2 : columns
