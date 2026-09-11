@@ -8,10 +8,19 @@ class VpnLister
       return "В папке конфигураций нет доступных VPN-интерфейсов." if files.empty?
 
       sorted_files = sort_files(files, sort_by)
-      items        = prepare_items(sorted_files, verbose_time)
+
+      # 1. Считаем максимальную длину голого имени ровно ОДИН раз на самом верху
+      max_name_len = sorted_files.map { |f| f[:name].length }.max || 0
+
+      # 2. Вычисляем точную ширину колонки: имя + пробел + (дата из 16 символов, если включена) + 3 пробела отступа
+      date_width = verbose_time ? 17 : 0 # 1 пробел + 16 символов самой даты
+      col_width  = max_name_len + date_width + 3
+
+      items        = prepare_items(sorted_files, max_name_len, verbose_time)
       actual_cols  = verbose_time ? 2 : columns
 
-      format_vertical_columns(items, actual_cols)
+      # Передаем уже готовую col_width в метод сетки
+      format_vertical_columns(items, actual_cols, col_width)
     end
 
     private
@@ -42,11 +51,8 @@ class VpnLister
         end
       end
 
-      # 3. Шаг: Превращение структуры в плоские строки для колонок (с датой или без)
-      def prepare_items(files, verbose_time)
-        # Считаем максимальную длину имени
-        max_name_len = files.map { |f| f[:name].length }.max || 0
-
+      # 3. Шаг: Чистое форматирование ячеек на основе переданной длины
+      def prepare_items(files, max_name_len, verbose_time)
         files.map do |item|
           if verbose_time
             formatted_time = item[:mtime].strftime('%Y-%m-%d %H:%M')
@@ -58,11 +64,7 @@ class VpnLister
       end
 
       # 4. Шаг: Математика вертикального распределения колонок
-      def format_vertical_columns(items, col_count)
-        # Находим длину самого длинного имени интерфейса и добавляем отступ в 3 пробела
-        max_len = items.map(&:length).max || 0
-        col_width = max_len + 3
-
+      def format_vertical_columns(items, col_count, col_width)
         # Рассчитываем, сколько строк нам понадобится (округление вверх)
         row_count = (items.size.to_f / col_count).ceil
 
