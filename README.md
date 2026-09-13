@@ -42,8 +42,9 @@ ruby dir.rb -h
 Shows available VPN configurations.
 
 ```sh
-ruby list.rb
 # Sort by name (default)
+ruby list.rb
+# OR
 ruby list.rb -n
 # Sort by date (newest first)
 ruby list.rb -t
