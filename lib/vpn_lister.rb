@@ -12,6 +12,7 @@ class VpnLister
       # Вычисляем длину
       max_name_len = sorted_files.map { |f| f[:name].length }.max || 0
 
+      # Получаем массив форматированных ячеек
       items = prepare_items(sorted_files, max_name_len, verbose_time)
 
       # Получаем всю геометрию сетки одной строкой через деструктуризацию массива
@@ -60,15 +61,15 @@ class VpnLister
         end
       end
 
-      # 3. Шаг: Чистое форматирование ячеек на основе переданной длины
+      # 3. Шаг: Форматирование ячеек на основе переданной длины
       def prepare_items(files, max_name_len, verbose_time)
-        files.map do |item|
-          if verbose_time
+        if verbose_time
+          files.map do |item|
             formatted_time = item[:mtime].strftime('%Y-%m-%d %H:%M')
             "#{item[:name].ljust(max_name_len)} #{formatted_time}"
-          else
-            item[:name]
           end
+        else
+          files.map { |item| item[:name] }
         end
       end
 
