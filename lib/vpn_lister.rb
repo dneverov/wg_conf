@@ -63,14 +63,16 @@ class VpnLister
 
       # 3. Шаг: Форматирование ячеек на основе переданной длины
       def prepare_items(files, max_name_len, verbose_time)
-        if verbose_time
-          files.map do |item|
-            formatted_time = item[:mtime].strftime('%Y-%m-%d %H:%M')
-            "#{item[:name].ljust(max_name_len)} #{formatted_time}"
+        # Определяем правило трансформации
+        formatter =
+          if verbose_time
+            -> (item) { "#{item[:name].ljust(max_name_len)} #{item[:mtime].strftime('%Y-%m-%d %H:%M')}" }
+          else
+            -> (item) { item[:name] }
           end
-        else
-          files.map { |item| item[:name] }
-        end
+
+        # Отдаём готовое правило в map.
+        files.map(&formatter)
       end
 
       # 4. Шаг: Математика вертикального распределения колонок
