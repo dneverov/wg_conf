@@ -61,19 +61,34 @@ ruby dir.rb -h
 ```
 
 
-### `list.rb`
+### 📋 VPN Configuration Lister (`list.rb`)
 
-Shows available VPN configurations.
+Scans your system target directory and displays all available VPN configurations in clean, vertically-aligned columns without the `.conf` extension.
 
-```sh
-# Sort by name (default)
+#### Usage
+```bash
+ruby list.rb [options]
+```
+
+#### Available Options
+* `-n, --name` — Sorts configurations alphabetically by name in 3 columns. This is the default behavior.
+* `-t, --time` — Sorts configurations by modification date, placing the newest files at the top (3 columns).
+* `-d, --details` — Sorts configurations by modification date and appends a clean, right-aligned timestamp (`YYYY-MM-DD HH:MM`) next to each name. Automatically switches the layout to 2 columns for optimal readability.
+* `-h, --help` — Prints the helper banner and tool usage instructions.
+
+#### Examples
+```bash
+# List all configurations alphabetically in 3 vertical columns (default)
 ruby list.rb
-# OR
-ruby list.rb -n
-# Sort by date (newest first)
+
+# List configurations by date, freshest first (3 columns)
 ruby list.rb -t
-# Sort by date and display compact time (2 columns)
+
+# List configurations with dates aligned cleanly to the right (2 columns)
 ruby list.rb -d
+
+# Show help information
+ruby list.rb -h
 ```
 
 ### `vpn_run.rb`
