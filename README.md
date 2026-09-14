@@ -155,32 +155,40 @@ ruby vpn_check.rb -h
 ```
 
 
-## Test
+## 🧪 Testing Suite
 
-```sh
-# Singe file
+The project includes a robust, isolated testing infrastructure with over 60 test runs and 200+ assertions. It separates lightning-fast in-memory **unit tests** from comprehensive **integration tests** that spawn real CLI subprocesses.
+
+### Running Individual Tests
+You can run any specific test file manually using the Ruby interpreter. Use the `-n` flag followed by a method name to isolate a single test case during debugging:
+
+```bash
+# Run a specific unit test suite
 ruby test/units/namer_test.rb
-# OR individual test
+
+# Run an individual test case inside a suite
 ruby test/units/namer_test.rb -n test_country_not_in_mapping
+
+# Run a specific integration test suite
+ruby test/integration/vpn_check_script_test.rb
 ```
 
-### Using Rake
-<!--
-- `rake` или `rake test` — запустит вообще все тесты (и юниты, и интеграционные)
-- `rake test:units` — запустит тесты только из папки `test/units/`
-- `rake test:integration` — запустит тесты только из папки `test/integration/`.
--->
+### Running with Rake (Recommended)
+Automation tasks are managed via `Rake`. The complete suite executes in just about a second and cleans up all mock file artifacts automatically.
 
-```sh
-# Run all tests
+```bash
+# Run the entire test suite (all units and integration tests)
 rake test
-# OR
+# OR simply
 rake
-# Run tests only from the `test/units/` directory
+
+# Run tests only from the unit directory (test/units/)
 rake test:units
-# Run tests only from the `test/integration/`
+
+# Run tests only from the integration directory (test/integration/)
 rake test:integration
 ```
+
 
 ## Related project
 
