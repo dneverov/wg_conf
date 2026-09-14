@@ -124,15 +124,36 @@ ruby vpn_run.rb -h
 ```
 
 
-### `vpn_check.rb`
+### 🔍 VPN Traffic Inspector (`vpn_check.rb`)
 
-Checks the VPN connection.
+Verifies the active VPN status and tests real data flow through the tunnel using an isolated ping check. It bypasses TSPU/ISP interference by forcing traffic strictly through the active interface.
 
-```sh
-ruby vpn_check.rb
-# To show detailed info (keys: -v, --verbose)
-ruby vpn_check.rb -v
+#### Usage
+```bash
+ruby vpn_check.rb [options]
 ```
+
+#### Exit Codes
+The script returns system codes instantly, allowing scripts or status bars to monitor connection health:
+* `0` — **Success**: Service is active, the interface is parsed correctly, and traffic flows successfully.
+* `1` — **Error**: The service is down, the interface is missing, or traffic is blocked by TSPU/ISP filters.
+
+#### Available Options
+* `-v, --verbose` — Prints a complete diagnostic summary map (systemd state, interface name, fallback host, ping validation) using an optimized single-pass check.
+* `-h, --help` — Prints the helper banner and tool usage instructions.
+
+#### Examples
+```bash
+# Quietly check the connection (returns exit code 0 or 1, prints a single result line)
+ruby vpn_check.rb
+
+# Run an extended live diagnostic breakdown when troubleshooting connection drops
+ruby vpn_check.rb -v
+
+# Show help information
+ruby vpn_check.rb -h
+```
+
 
 ## Test
 
