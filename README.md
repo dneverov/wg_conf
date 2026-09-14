@@ -91,25 +91,38 @@ ruby list.rb -d
 ruby list.rb -h
 ```
 
-### `vpn_run.rb`
 
-Starts AmneziaWG VPN using configs from a target directory.
+### ⚡ VPN Connection Manager (`vpn_run.rb`)
 
+Manages your AmneziaWG/WireGuard connections using configuration files from the system target directory. It handles stopping previous connections, dynamic configuration resolution, interface diagnostics, and automatically requests `sudo` privileges if launched by a regular user.
+
+#### Usage
 ```bash
-# By default starts the latest (most recent) config
-sudo ruby vpn_run.rb
-# OR without sudo (it will re-run with sudo)
-ruby vpn_run.rb
-# OR
-ruby vpn_run.rb wg2_net_ams_H16
-# To STOP services:
-ruby vpn_run.rb -s
+ruby vpn_run.rb [options] [config_name]
 ```
 
-Type key `-h` for help:
-```sh
+#### Arguments
+* `[config_name]` — **Optional**. The name of a specific VPN configuration file (without the `.conf` extension) to start. If omitted, the script automatically detects and starts the **latest (most recently modified)** configuration file in the directory.
+
+#### Available Options
+* `-s, --stop` — Stops all currently active systemd units matching your project's VPN service prefix, resetting all connections.
+* `-h, --help` — Prints the helper banner and tool usage instructions.
+
+#### Examples
+```bash
+# Start the most recent configuration file (auto-escalates to sudo if needed)
+ruby vpn_run.rb
+
+# Start a specific configuration interface explicitly
+ruby vpn_run.rb wg2_net_ams_H16
+
+# Stop all active VPN connections and clean up routing tables
+ruby vpn_run.rb -s
+
+# Show help information
 ruby vpn_run.rb -h
 ```
+
 
 ### `vpn_check.rb`
 
