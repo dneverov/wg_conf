@@ -4,6 +4,21 @@ A lightweight and robust CLI automation toolset for managing AmneziaWG and WireG
 
 ---
 
+## 🛠️ Prerequisites
+
+Before installing and running the scripts, ensure your Linux system meets the following requirements:
+
+### 1. AmneziaWG Kernel Module & Tools
+The system must have the active AmneziaWG kernel module and its associated CLI tools installed and configured:
+* **Kernel Module:** `amneziawg` (See [AmneziaWG Kernel Module Installation](https://github.com/amnezia-vpn/amneziawg-linux-kernel-module))
+* **CLI Tools:** `amneziawg-tools` (providing `awg` and `awg-quick` binaries, see [AmneziaWG Tools](https://github.com/amnezia-vpn/amneziawg-tools))
+
+### 2. VPN Configuration Files
+You must already possess valid, working `.conf` configuration files provided by an AmneziaWG-compatible VPN provider.
+* Place these initial raw files into your designated local `source_dir` before starting the automation flow.
+
+---
+
 ## 🚀 How To Use
 
 ### 📄 Single File Copier (`copy.rb`)
