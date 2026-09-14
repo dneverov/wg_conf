@@ -204,11 +204,13 @@ rake test:units
 rake test:integration
 ```
 
+---
 
 ## Related project
 
-You can also use [awg-switch](https://github.com/dneverov/awg-switch) to start or switch the Amnezia WG configuration.
+You can also use [awg-switch](https://github.com/dneverov/awg-switch) (Shell) to start or switch the AmneziaWG configuration.
 
+<!--
 ## TODO
 
 - [x] Add shareable lib
@@ -222,3 +224,4 @@ You can also use [awg-switch](https://github.com/dneverov/awg-switch) to start o
 - [x] Update `FileCopierTest` for `FileCopier.sync!` with period
 - [x] Add an utility for selecting VPN
 - [ ] Ref: Update `Copier` to work with instances (Low Priority)
+-->
