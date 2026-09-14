@@ -1,23 +1,33 @@
-# wg_conf
+# 🛠️ wg_conf
 
-Copies Amnezia WG configuration files.
+A lightweight and robust CLI automation toolset for managing AmneziaWG and WireGuard configuration files. It handles structured copying, renaming, sorting, listing, and network traffic status checking.
 
-## How To Use
+---
 
-### `copy.rb`
+## 🚀 How To Use
 
-Copies a single config file.
+### 📄 Single File Copier (`copy.rb`)
 
+Copies a single specified configuration file from the source directory to the system target directory (defined in `config.yml`). It safely copies the file, automatically creates missing directories, and updates target paths.
+
+#### Usage
 ```bash
-ruby copy.rb ConfigFileName.conf
-# OR
-ruby copy.rb ConfigFileName.conf NewFileName.conf
+ruby copy.rb <source_file.conf> [target_file.conf]
 ```
 
-E.g.
-```sh
+#### Arguments
+* `<source_file.conf>` — **Required**. The exact name of the file in your source directory that you want to copy.
+* `[target_file.conf]` — **Optional**. A new name for the file in the target directory. If omitted, the script automatically formats the name using the project's internal naming scheme (via `Namer`).
+
+#### Examples
+```bash
+# Copy a file and automatically determine its optimized target name
+ruby copy.rb SerbiaBelgradeS3.conf
+
+# Copy a file and explicitly force a specific target name
 ruby copy.rb SerbiaBelgradeS3.conf wg2_ser_bel_S3.conf
 ```
+
 
 ### 📂 Configuration Copier (`dir.rb`)
 
