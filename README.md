@@ -19,23 +19,37 @@ E.g.
 ruby copy.rb SerbiaBelgradeS3.conf wg2_ser_bel_S3.conf
 ```
 
-### `dir.rb`
+### 📂 Configuration Copier (`dir.rb`)
 
-Copies config files from a `source_dir` into a `target_dir`. (Directories are defined in the _config.yml_ file).
+Copies downloaded VPN configuration files from your local directory into the system target folder (e.g., `/etc/amnezia/amneziawg/`). Source and target paths are defined in `config.yml`.
 
+#### Usage
 ```bash
-# By default copies today's files (same as `ruby dir.rb -p 0`)
-ruby dir.rb
-# OR files added in the last 3 days
-ruby dir.rb -p 3
-# OR all files
-ruby dir.rb -p all
+ruby dir.rb [options]
 ```
 
-Type key `-h` for help:
-```sh
+#### Available Options
+* `-p, --period <value>` — Specifies the cutoff period for copying files.
+  * **Integer** (e.g., `0`, `3`) — Copies files modified within the last N days.
+  * `all` — Copies all available configuration files regardless of their age.
+  * *Default value:* `0` (copies today's files only).
+* `-h, --help` — Prints the helper banner and tool usage instructions.
+
+#### Examples
+```bash
+# Copy only today's configurations (default)
+ruby dir.rb
+
+# Copy configurations added/modified in the last 3 days
+ruby dir.rb -p 3
+
+# Copy all configuration files from the source directory
+ruby dir.rb -p all
+
+# Show full help information
 ruby dir.rb -h
 ```
+
 
 ### `list.rb`
 
