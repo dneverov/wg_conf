@@ -1,118 +1,216 @@
 # wg_conf
 
-Copies Amnezia WG configuration files.
+A lightweight and robust CLI automation toolset for managing AmneziaWG and WireGuard configuration files. It handles structured copying, renaming, sorting, listing, and network traffic status checking.
+
+---
+
+## Prerequisites
+
+Before installing and running the scripts, ensure your Linux system meets the following requirements:
+
+### 1. AmneziaWG Kernel Module & Tools
+The system must have the active AmneziaWG kernel module and its associated CLI tools installed and configured:
+* **Kernel Module:** `amneziawg` (See [AmneziaWG Kernel Module Installation](https://github.com/amnezia-vpn/amneziawg-linux-kernel-module))
+* **CLI Tools:** `amneziawg-tools` (providing `awg` and `awg-quick` binaries, see [AmneziaWG Tools](https://github.com/amnezia-vpn/amneziawg-tools))
+
+### 2. VPN Configuration Files
+You must already possess valid, working `.conf` configuration files provided by an AmneziaWG-compatible VPN provider.
+* Place these initial raw files into your designated local `source_dir` before starting the automation flow.
+
+---
 
 ## How To Use
 
-### `copy.rb`
+### Single File Copier (`copy.rb`)
 
-Copies a single config file.
+Copies a single specified configuration file from the source directory to the system target directory (defined in `config.yml`). It safely copies the file, automatically creates missing directories, and updates target paths.
 
+#### Usage
 ```bash
-ruby copy.rb ConfigFileName.conf
-# OR
-ruby copy.rb ConfigFileName.conf NewFileName.conf
+ruby copy.rb <source_file.conf> [target_file.conf]
 ```
 
-E.g.
-```sh
+#### Arguments
+* `<source_file.conf>` — **Required**. The exact name of the file in your source directory that you want to copy.
+* `[target_file.conf]` — **Optional**. A new name for the file in the target directory. If omitted, the script automatically formats the name using the project's internal naming scheme (via `Namer`).
+
+#### Examples
+```bash
+# Copy a file and automatically determine its optimized target name
+ruby copy.rb SerbiaBelgradeS3.conf
+
+# Copy a file and explicitly force a specific target name
 ruby copy.rb SerbiaBelgradeS3.conf wg2_ser_bel_S3.conf
 ```
 
-### `dir.rb`
 
-Copies config files from a `source_dir` into a `target_dir`. (Directories are defined in the _config.yml_ file).
+### Configuration Copier (`dir.rb`)
 
+Copies downloaded VPN configuration files from your local directory into the system target folder (e.g., `/etc/amnezia/amneziawg/`). Source and target paths are defined in `config.yml`.
+
+#### Usage
 ```bash
-# By default copies today's files (same as `ruby dir.rb -p 0`)
-ruby dir.rb
-# OR files added in the last 3 days
-ruby dir.rb -p 3
-# OR all files
-ruby dir.rb -p all
+ruby dir.rb [options]
 ```
 
-Type key `-h` for help:
-```sh
+#### Available Options
+* `-p, --period <value>` — Specifies the cutoff period for copying files.
+  * **Integer** (e.g., `0`, `3`) — Copies files modified within the last N days.
+  * `all` — Copies all available configuration files regardless of their age.
+  * *Default value:* `0` (copies today's files only).
+* `-h, --help` — Prints the helper banner and tool usage instructions.
+
+#### Examples
+```bash
+# Copy only today's configurations (default)
+ruby dir.rb
+
+# Copy configurations added/modified in the last 3 days
+ruby dir.rb -p 3
+
+# Copy all configuration files from the source directory
+ruby dir.rb -p all
+
+# Show full help information
 ruby dir.rb -h
 ```
 
-### `list.rb`
 
-Shows available VPN configurations.
+### VPN Configuration Lister (`list.rb`)
 
-```sh
-# Sort by name (default)
-ruby list.rb
-# OR
-ruby list.rb -n
-# Sort by date (newest first)
-ruby list.rb -t
-# Sort by date and display compact time (2 columns)
-ruby list.rb -d
-```
+Scans your system target directory and displays all available VPN configurations in clean, vertically-aligned columns without the `.conf` extension.
 
-### `vpn_run.rb`
-
-Starts AmneziaWG VPN using configs from a target directory.
-
+#### Usage
 ```bash
-# By default starts the latest (most recent) config
-sudo ruby vpn_run.rb
-# OR without sudo (it will re-run with sudo)
-ruby vpn_run.rb
-# OR
-ruby vpn_run.rb wg2_net_ams_H16
-# To STOP services:
-ruby vpn_run.rb -s
+ruby list.rb [options]
 ```
 
-Type key `-h` for help:
-```sh
+#### Available Options
+* `-n, --name` — Sorts configurations alphabetically by name in 3 columns. This is the default behavior.
+* `-t, --time` — Sorts configurations by modification date, placing the newest files at the top (3 columns).
+* `-d, --details` — Sorts configurations by modification date and appends a clean, right-aligned timestamp (`YYYY-MM-DD HH:MM`) next to each name. Automatically switches the layout to 2 columns for optimal readability.
+* `-h, --help` — Prints the helper banner and tool usage instructions.
+
+#### Examples
+```bash
+# List all configurations alphabetically in 3 vertical columns (default)
+ruby list.rb
+
+# List configurations by date, freshest first (3 columns)
+ruby list.rb -t
+
+# List configurations with dates aligned cleanly to the right (2 columns)
+ruby list.rb -d
+
+# Show help information
+ruby list.rb -h
+```
+
+
+### VPN Connection Manager (`vpn_run.rb`)
+
+Manages your AmneziaWG/WireGuard connections using configuration files from the system target directory. It handles stopping previous connections, dynamic configuration resolution, interface diagnostics, and automatically requests `sudo` privileges if launched by a regular user.
+
+#### Usage
+```bash
+ruby vpn_run.rb [options] [config_name]
+```
+
+#### Arguments
+* `[config_name]` — **Optional**. The name of a specific VPN configuration file (without the `.conf` extension) to start. If omitted, the script automatically detects and starts the **latest (most recently modified)** configuration file in the directory.
+
+#### Available Options
+* `-s, --stop` — Stops all currently active systemd units matching your project's VPN service prefix, resetting all connections.
+* `-h, --help` — Prints the helper banner and tool usage instructions.
+
+#### Examples
+```bash
+# Start the most recent configuration file (auto-escalates to sudo if needed)
+ruby vpn_run.rb
+
+# Start a specific configuration interface explicitly
+ruby vpn_run.rb wg2_net_ams_H16
+
+# Stop all active VPN connections and clean up routing tables
+ruby vpn_run.rb -s
+
+# Show help information
 ruby vpn_run.rb -h
 ```
 
-### `vpn_check.rb`
 
-Checks the VPN connection.
+### VPN Traffic Inspector (`vpn_check.rb`)
 
-```sh
+Verifies the active VPN status and tests real data flow through the tunnel using an isolated ping check. It bypasses TSPU/ISP interference by forcing traffic strictly through the active interface.
+
+#### Usage
+```bash
+ruby vpn_check.rb [options]
+```
+
+#### Exit Codes
+The script returns system codes instantly, allowing scripts or status bars to monitor connection health:
+* `0` — **Success**: Service is active, the interface is parsed correctly, and traffic flows successfully.
+* `1` — **Error**: The service is down, the interface is missing, or traffic is blocked by TSPU/ISP filters.
+
+#### Available Options
+* `-v, --verbose` — Prints a complete diagnostic summary map (systemd state, interface name, fallback host, ping validation) using an optimized single-pass check.
+* `-h, --help` — Prints the helper banner and tool usage instructions.
+
+#### Examples
+```bash
+# Quietly check the connection (returns exit code 0 or 1, prints a single result line)
 ruby vpn_check.rb
-# To show detailed info (keys: -v, --verbose)
+
+# Run an extended live diagnostic breakdown when troubleshooting connection drops
 ruby vpn_check.rb -v
+
+# Show help information
+ruby vpn_check.rb -h
 ```
 
-## Test
 
-```sh
-# Singe file
+## Testing Suite
+
+The project includes a robust, isolated testing infrastructure with over 60 test runs and 200+ assertions. It separates lightning-fast in-memory **unit tests** from comprehensive **integration tests** that spawn real CLI subprocesses.
+
+### Running Individual Tests
+You can run any specific test file manually using the Ruby interpreter. Use the `-n` flag followed by a method name to isolate a single test case during debugging:
+
+```bash
+# Run a specific unit test suite
 ruby test/units/namer_test.rb
-# OR individual test
+
+# Run an individual test case inside a suite
 ruby test/units/namer_test.rb -n test_country_not_in_mapping
+
+# Run a specific integration test suite
+ruby test/integration/vpn_check_script_test.rb
 ```
 
-### Using Rake
-<!--
-- `rake` или `rake test` — запустит вообще все тесты (и юниты, и интеграционные)
-- `rake test:units` — запустит тесты только из папки `test/units/`
-- `rake test:integration` — запустит тесты только из папки `test/integration/`.
--->
+### Running with Rake (Recommended)
+Automation tasks are managed via `Rake`. The complete suite executes in just about a second and cleans up all mock file artifacts automatically.
 
-```sh
-# Run all tests
+```bash
+# Run the entire test suite (all units and integration tests)
 rake test
-# OR
+# OR simply
 rake
-# Run tests only from the `test/units/` directory
+
+# Run tests only from the unit directory (test/units/)
 rake test:units
-# Run tests only from the `test/integration/`
+
+# Run tests only from the integration directory (test/integration/)
 rake test:integration
 ```
 
+---
+
 ## Related project
 
-You can also use [awg-switch](https://github.com/dneverov/awg-switch) to start or switch the Amnezia WG configuration.
+You can also use [awg-switch](https://github.com/dneverov/awg-switch) (Shell) to start or switch the AmneziaWG configuration.
 
+<!--
 ## TODO
 
 - [x] Add shareable lib
@@ -126,3 +224,4 @@ You can also use [awg-switch](https://github.com/dneverov/awg-switch) to start o
 - [x] Update `FileCopierTest` for `FileCopier.sync!` with period
 - [x] Add an utility for selecting VPN
 - [ ] Ref: Update `Copier` to work with instances (Low Priority)
+-->
