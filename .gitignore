@@ -1,2 +1,16 @@
-# Игнорируем локальный файл конфигурации
+# Configuration and Secrets
 config.yml
+*.conf
+
+# Linux System Files
+.directory
+
+# Temporary and IDE Files
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Test Artifacts and Cache
+.rake_test_cache
+test/test_files_*/
