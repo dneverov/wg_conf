@@ -1,10 +1,10 @@
-# 🛠️ wg_conf
+# wg_conf
 
 A lightweight and robust CLI automation toolset for managing AmneziaWG and WireGuard configuration files. It handles structured copying, renaming, sorting, listing, and network traffic status checking.
 
 ---
 
-## 🛠️ Prerequisites
+## Prerequisites
 
 Before installing and running the scripts, ensure your Linux system meets the following requirements:
 
@@ -19,9 +19,9 @@ You must already possess valid, working `.conf` configuration files provided by 
 
 ---
 
-## 🚀 How To Use
+## How To Use
 
-### 📄 Single File Copier (`copy.rb`)
+### Single File Copier (`copy.rb`)
 
 Copies a single specified configuration file from the source directory to the system target directory (defined in `config.yml`). It safely copies the file, automatically creates missing directories, and updates target paths.
 
@@ -44,7 +44,7 @@ ruby copy.rb SerbiaBelgradeS3.conf wg2_ser_bel_S3.conf
 ```
 
 
-### 📂 Configuration Copier (`dir.rb`)
+### Configuration Copier (`dir.rb`)
 
 Copies downloaded VPN configuration files from your local directory into the system target folder (e.g., `/etc/amnezia/amneziawg/`). Source and target paths are defined in `config.yml`.
 
@@ -76,7 +76,7 @@ ruby dir.rb -h
 ```
 
 
-### 📋 VPN Configuration Lister (`list.rb`)
+### VPN Configuration Lister (`list.rb`)
 
 Scans your system target directory and displays all available VPN configurations in clean, vertically-aligned columns without the `.conf` extension.
 
@@ -107,7 +107,7 @@ ruby list.rb -h
 ```
 
 
-### ⚡ VPN Connection Manager (`vpn_run.rb`)
+### VPN Connection Manager (`vpn_run.rb`)
 
 Manages your AmneziaWG/WireGuard connections using configuration files from the system target directory. It handles stopping previous connections, dynamic configuration resolution, interface diagnostics, and automatically requests `sudo` privileges if launched by a regular user.
 
@@ -139,7 +139,7 @@ ruby vpn_run.rb -h
 ```
 
 
-### 🔍 VPN Traffic Inspector (`vpn_check.rb`)
+### VPN Traffic Inspector (`vpn_check.rb`)
 
 Verifies the active VPN status and tests real data flow through the tunnel using an isolated ping check. It bypasses TSPU/ISP interference by forcing traffic strictly through the active interface.
 
@@ -170,7 +170,7 @@ ruby vpn_check.rb -h
 ```
 
 
-## 🧪 Testing Suite
+## Testing Suite
 
 The project includes a robust, isolated testing infrastructure with over 60 test runs and 200+ assertions. It separates lightning-fast in-memory **unit tests** from comprehensive **integration tests** that spawn real CLI subprocesses.
 
