@@ -204,11 +204,13 @@ rake test:units
 rake test:integration
 ```
 
+<!--
 ---
 
 ## Related project
 
 You can also use [awg-switch](https://github.com/dneverov/awg-switch) (Shell) to start or switch the AmneziaWG configuration.
+-->
 
 <!--
 ## TODO
