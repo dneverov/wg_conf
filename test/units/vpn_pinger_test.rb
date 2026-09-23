@@ -12,12 +12,8 @@ class VpnPingerTest < UnitTestCase
     create_mock_config(TXT_MOCK_DIR, 'wg2_rus_mos.conf')
     create_mock_config(TXT_MOCK_DIR, 'wg2_chi_san.conf')
 
-    # Направляем стаб напрямую в VpnInspector, имитируя успешный пинг (команда возвращает true)
-    VpnInspector.class_eval do
-      def self.execute_command(*args, **options)
-        true
-      end
-    end
+    # Включаем симуляцию успешного прохождения пинга
+    stub_ping_result(true)
 
     results = VpnPinger.ping_all
 
@@ -33,12 +29,8 @@ class VpnPingerTest < UnitTestCase
   def test_ping_all_handles_failed_interfaces
     create_mock_config(TXT_MOCK_DIR, 'wg2_broken.conf')
 
-    # Имитируем сбой пинга через стаб (команда возвращает false)
-    VpnInspector.class_eval do
-      def self.execute_command(*args, **options)
-        false
-      end
-    end
+    # Включаем симуляцию сбоя сети или блокировки ТСПУ
+    stub_ping_result(false)
 
     results = VpnPinger.ping_all
 
@@ -46,4 +38,13 @@ class VpnPingerTest < UnitTestCase
     assert_equal 'wg2_broken', results[0][:interface]
     assert_equal false, results[0][:active]
   end
+
+  private
+
+    # Хелпер инкапсулирует переопределение метода execute_command для VpnInspector
+    def stub_ping_result(value)
+      VpnInspector.class_eval do
+        define_singleton_method(:execute_command) { |*_, **_| value }
+      end
+    end
 end
