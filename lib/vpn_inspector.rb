@@ -26,6 +26,12 @@ class VpnInspector
       }
     end
 
+    # 3. Шаг инспекции: Проверочный пинг хоста через конкретный туннель
+    def ping_successful?(interface)
+      # -c 1 (один пакет), -W 2 (таймаут 2 секунды, если ТСПУ глушит пакеты)
+      execute_command("ping -c 1 -W 2 -I #{interface} #{Config.ping_host} > /dev/null 2>&1", silent: true)
+    end
+
     private
 
       # 1. Шаг инспекции: Проверка статуса службы в systemd
@@ -43,12 +49,6 @@ class VpnInspector
         # Мы вытаскиваем то, что идет после знака @
         status_output = read_system_output("systemctl list-units '#{Config.vpn_service}*' --state=active")
         status_output.match(/#{Config.vpn_service}([^\s\.]+)/)&.captures&.first
-      end
-
-      # 3. Шаг инспекции: Проверочный пинг хоста через конкретный туннель
-      def ping_successful?(interface)
-        # -c 1 (один пакет), -W 2 (таймаут 2 секунды, если ТСПУ глушит пакеты)
-        execute_command("ping -c 1 -W 2 -I #{interface} #{Config.ping_host} > /dev/null 2>&1", silent: true)
       end
   end
 end
