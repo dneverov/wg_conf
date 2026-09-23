@@ -13,9 +13,7 @@ class VpnPingerTest < UnitTestCase
     create_mock_config(TXT_MOCK_DIR, 'wg2_chi_san.conf')
 
     # Включаем симуляцию успешного прохождения пинга
-    stub_ping_result(true)
-
-    results = VpnPinger.ping_all
+    results = with_stubbed_ping(true) { VpnPinger.ping_all }
 
     assert_equal 2, results.size
 
@@ -30,9 +28,7 @@ class VpnPingerTest < UnitTestCase
     create_mock_config(TXT_MOCK_DIR, 'wg2_broken.conf')
 
     # Включаем симуляцию сбоя сети или блокировки ТСПУ
-    stub_ping_result(false)
-
-    results = VpnPinger.ping_all
+    results = with_stubbed_ping(false) { VpnPinger.ping_all }
 
     assert_equal 1, results.size
     assert_equal 'wg2_broken', results[0][:interface]
@@ -41,10 +37,8 @@ class VpnPingerTest < UnitTestCase
 
   private
 
-    # Хелпер инкапсулирует переопределение метода execute_command для VpnInspector
-    def stub_ping_result(value)
-      VpnInspector.class_eval do
-        define_singleton_method(:execute_command) { |*_, **_| value }
-      end
+    # Используем встроенный Minitest Object#stub для безопасного перехвата выполнения
+    def with_stubbed_ping(value, &block)
+      VpnInspector.stub(:execute_command, value, &block)
     end
 end
