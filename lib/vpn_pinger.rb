@@ -1,4 +1,5 @@
 require_relative 'vpn_inspector'
+require_relative 'vpn_runner'
 
 class VpnPinger
   class << self
@@ -8,12 +9,39 @@ class VpnPinger
       return [] if all_files.empty?
 
       interfaces = all_files.map { |f| File.basename(f, '.conf') }.sort
+      initial_interface = VpnInspector.send(:active_interface_name)
+      results = []
 
-      interfaces.map do |interface|
-        # Переиспользуем готовый метод инспектора, защищенный вашим TEST_ENV!
-        status = VpnInspector.ping_successful?(interface)
-        { interface: interface, active: status }
+      begin
+        interfaces.each do |interface|
+          switch_interface(interface)
+          status = VpnInspector.ping_successful?(interface)
+          result = { interface: interface, active: status }
+
+          results << result
+          # Если скрипт передал блок, отдаем ему промежуточный результат для печати на лету
+          yield(result) if block_given?
+        end
+      ensure
+        # Используем методы VpnRunner для восстановления сети
+        if initial_interface
+          switch_interface(initial_interface)
+        else
+          VpnRunner.stop_connections
+        end
       end
+
+      results
     end
+
+    private
+
+      def switch_interface(interface)
+        return if ENV['TEST_ENV'] == 'true'
+
+        VpnRunner.stop_connections
+        VpnRunner.start_connection(interface, show_status: false)
+        # sleep 1
+      end
   end
 end

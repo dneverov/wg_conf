@@ -37,8 +37,10 @@ class VpnPingerTest < UnitTestCase
 
   private
 
-    # Используем встроенный Minitest Object#stub для безопасного перехвата выполнения
+    # Перехватываем выполнение системных команд как в инспекторе, так и в раннере
     def with_stubbed_ping(value, &block)
-      VpnInspector.stub(:execute_command, value, &block)
+      VpnInspector.stub(:execute_command, value) do
+        VpnRunner.stub(:execute_command, value, &block)
+      end
     end
 end
