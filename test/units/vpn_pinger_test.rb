@@ -40,7 +40,19 @@ class VpnPingerTest < UnitTestCase
     # Перехватываем выполнение системных команд как в инспекторе, так и в раннере
     def with_stubbed_ping(value, &block)
       VpnInspector.stub(:execute_command, value) do
-        VpnRunner.stub(:execute_command, value, &block)
+        VpnRunner.stub(:execute_command, value) do
+          suppress_output(&block)
+        end
       end
+    end
+
+    # Хелпер для перенаправления $stdout в пустоту
+    def suppress_output
+      original_stdout = $stdout
+      $stdout = File.open(File::NULL, 'w')
+      yield
+    ensure
+      $stdout&.close
+      $stdout = original_stdout
     end
 end
