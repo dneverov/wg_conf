@@ -170,9 +170,20 @@ ruby vpn_check.rb -h
 ```
 
 
+### VPN Configuration Sequential Pinger (`ping_all.rb`)
+
+Sequentially tests all available VPN configurations by temporarily bringing up each tunnel and verifying the real data flow. It automatically suppresses underlying systemd output, tracks results interactively, and safely restores your initial network state upon completion.
+
+#### Usage
+```bash
+# Sequentially test all configurations (automatically requests sudo privileges)
+ruby ping_all.rb
+```
+
+
 ## Testing Suite
 
-The project includes a robust, isolated testing infrastructure with over 60 test runs and 200+ assertions. It separates lightning-fast in-memory **unit tests** from comprehensive **integration tests** that spawn real CLI subprocesses.
+The project includes a robust, isolated testing infrastructure with over 70 test runs and 260+ assertions. It separates lightning-fast in-memory **unit tests** from comprehensive **integration tests** that spawn real CLI subprocesses.
 
 ### Running Individual Tests
 You can run any specific test file manually using the Ruby interpreter. Use the `-n` flag followed by a method name to isolate a single test case during debugging:
