@@ -1,40 +1,53 @@
 require_relative 'integration_test_case'
 
 class PingAllScriptTest < IntegrationTestCase
-  # Автоматически настраиваем все константы путей через хелпер базового класса
   setup_integration_paths 'ping_all.rb', 'pinger'
 
-  def test_ping_all_script_execution_flow
-    # Создаем тестовые файлы конфигураций в нашей изолированной директории TARGET_MOCK
+  def test_ping_all_script_shows_working_statuses_when_network_is_ok
     create_mock_config(self.class::TARGET_MOCK, 'wg2_test_active.conf')
+
+    # Имитируем, что сеть полностью исправна (MOCK_VPN_FAIL = 'false')
+    stdout, stderr, status = run_script_with_network_mock(fail_network: false)
+
+    assert status.success?, "Скрипт завершился с ошибкой: #{stderr}"
+    assert_match(/Запуск полного последовательного прозвона/, stdout)
+
+    # РАБОТАЕТ
+    assert_match(/wg2_test_active\s+\[ РАБОТАЕТ \]/, stdout)
+    assert_match(/Доступно рабочих конфигураций: 1 из 1/, stdout)
+  end
+
+  def test_ping_all_script_shows_failed_statuses_when_network_fails
     create_mock_config(self.class::TARGET_MOCK, 'wg2_test_broken.conf')
 
-    # Запускаем скрипт через встроенный метод run_script, который возвращает [stdout, stderr, status]
-    stdout, stderr, status = run_script
+    # Имитируем тотальный сбой сети или блокировку ТСПУ (MOCK_VPN_FAIL = 'true')
+    stdout, _, status = run_script_with_network_mock(fail_network: true)
 
-    # Проверяем структуру шапки в stdout
+    assert status.success?, "Скрипт должен завершаться с кодом 0 даже при сбоях туннелей"
     assert_match(/Запуск полного последовательного прозвона/, stdout)
-    assert_match(/Каждый туннель будет временно поднят/, stdout)
 
-    # Проверяем корректность вывода статусов интерфейсов
-    assert_match(/wg2_test_active\s+\[ (РАБОТАЕТ|СБОЙ) \]/, stdout)
-    assert_match(/wg2_test_broken\s+\[ (РАБОТАЕТ|СБОЙ) \]/, stdout)
-
-    # Проверяем финальную статистику в футере
-    assert_match(/Прозвон полностью завершен/, stdout)
-    assert status.success?, "Скрипт завершился с ошибкой: #{stderr}"
+    # СБОЙ
+    assert_match(/wg2_test_broken\s+\[   СБОЙ   \]/, stdout)
+    assert_match(/Доступно рабочих конфигураций: 0 из 1/, stdout)
   end
 
-  # Тест на сценарий отказа / отсутствия конфигураций
   def test_ping_all_script_handles_empty_configurations
-    # В этом тесте мы намеренно НЕ создаем файлы в TARGET_MOCK (папка пустая)
-    stdout, stderr, status = run_script
+    stdout, _, status = run_script_with_network_mock(fail_network: false)
 
-    # Проверяем, что шапка вывелась, но скрипт корректно обработал пустоту
     assert_match(/Запуск полного последовательного прозвона/, stdout)
     assert_match(/Доступные конфигурации не найдены/, stdout)
-
-    # Скрипт должен завершиться успешно (exit 0), а не упасть по ошибке
-    assert status.success?, "Скрипт упал вместо корректного выхода: #{stderr}"
+    assert status.success?
   end
+
+  private
+
+    # Наш адаптированный хелпер, использующий уже существующий в проекте MOCK_VPN_FAIL
+    def run_script_with_network_mock(fail_network:)
+      env = {
+        'TEST_ENV' => 'true',
+        'CONFIG_PATH' => self.class::CONFIG_FILE,
+        'MOCK_VPN_FAIL' => fail_network ? 'true' : 'false'
+      }
+      Open3.capture3(env, 'ruby', self.class::SCRIPT_PATH)
+    end
 end
