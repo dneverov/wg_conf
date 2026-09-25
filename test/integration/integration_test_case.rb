@@ -36,13 +36,15 @@ class IntegrationTestCase < Minitest::Test
   private
 
     # Хелпер для запуска vpn_run.rb и dir.rb в изолированном подпроцессе
-    def run_script(*args)
+    def run_script(*args, mock_fail: false)
       # Передаем переменные окружения: 
       # TEST_ENV: чтобы заблокировать реальные системные cp/systemctl
       # CONFIG_PATH: чтобы скрипт читал наш тестовый конфиг с диска
+      # MOCK_VPN_FAIL: опциональный аргумент для сетевых тестов
       env = {
         'TEST_ENV' => 'true',
-        'CONFIG_PATH' => self.class::CONFIG_FILE
+        'CONFIG_PATH' => self.class::CONFIG_FILE,
+        'MOCK_VPN_FAIL' => mock_fail ? 'true' : 'false'
       }
       # Важно: Так как в vpn_run.rb мы проверяем Process.uid == 0,
       # а тесты запускаются обычным пользователем, нам нужно симулировать, что мы уже под root.

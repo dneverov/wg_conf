@@ -7,7 +7,7 @@ class PingAllScriptTest < IntegrationTestCase
     create_mock_config(self.class::TARGET_MOCK, 'wg2_test_active.conf')
 
     # Имитируем, что сеть полностью исправна (MOCK_VPN_FAIL = 'false')
-    stdout, stderr, status = run_script_with_network_mock(fail_network: false)
+    stdout, stderr, status = run_script(mock_fail: false)
 
     assert status.success?, "Скрипт завершился с ошибкой: #{stderr}"
     assert_match(/Запуск полного последовательного прозвона/, stdout)
@@ -21,7 +21,7 @@ class PingAllScriptTest < IntegrationTestCase
     create_mock_config(self.class::TARGET_MOCK, 'wg2_test_broken.conf')
 
     # Имитируем тотальный сбой сети или блокировку ТСПУ (MOCK_VPN_FAIL = 'true')
-    stdout, _, status = run_script_with_network_mock(fail_network: true)
+    stdout, _, status = run_script(mock_fail: true)
 
     assert status.success?, "Скрипт должен завершаться с кодом 0 даже при сбоях туннелей"
     assert_match(/Запуск полного последовательного прозвона/, stdout)
@@ -32,22 +32,10 @@ class PingAllScriptTest < IntegrationTestCase
   end
 
   def test_ping_all_script_handles_empty_configurations
-    stdout, _, status = run_script_with_network_mock(fail_network: false)
+    stdout, _, status = run_script(mock_fail: false)
 
     assert_match(/Запуск полного последовательного прозвона/, stdout)
     assert_match(/Доступные конфигурации не найдены/, stdout)
     assert status.success?
   end
-
-  private
-
-    # Наш адаптированный хелпер, использующий уже существующий в проекте MOCK_VPN_FAIL
-    def run_script_with_network_mock(fail_network:)
-      env = {
-        'TEST_ENV' => 'true',
-        'CONFIG_PATH' => self.class::CONFIG_FILE,
-        'MOCK_VPN_FAIL' => fail_network ? 'true' : 'false'
-      }
-      Open3.capture3(env, 'ruby', self.class::SCRIPT_PATH)
-    end
 end
