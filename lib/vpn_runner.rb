@@ -31,7 +31,7 @@ class VpnRunner
       puts "Запуск сервиса #{service_name}..."
       if execute_command("systemctl start #{service_name}")
         puts "VPN успешно запущен!"
-        puts "-" * 40
+        Config.render_divider
         show_status(config_name) if show_status
         true
       else
