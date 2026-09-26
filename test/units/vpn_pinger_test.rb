@@ -41,18 +41,8 @@ class VpnPingerTest < UnitTestCase
     def with_stubbed_ping(value, &block)
       VpnInspector.stub(:execute_command, value) do
         VpnRunner.stub(:execute_command, value) do
-          silence_output(&block)
+          Config.silence_output(&block)
         end
       end
-    end
-
-    # Хелпер для перенаправления $stdout в пустоту
-    def silence_output
-      original_stdout = $stdout
-      $stdout = File.open(File::NULL, 'w')
-      yield original_stdout
-    ensure
-      $stdout.close rescue nil
-      $stdout = original_stdout
     end
 end

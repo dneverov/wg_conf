@@ -75,6 +75,17 @@ class Config
       exit 1
     end
 
+    # Универсальный хелпер для безопасного глушения консольного спама
+    def silence_output
+      original_stdout = $stdout
+      # Перенаправляем $stdout в пустоту
+      $stdout = File.open(File::NULL, 'w')
+      yield original_stdout
+    ensure
+      $stdout.close rescue nil
+      $stdout = original_stdout
+    end
+
     private
 
       # Универсальный хелпер для извлечения настроек
