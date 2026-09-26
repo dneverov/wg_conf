@@ -1,0 +1,41 @@
+require_relative 'integration_test_case'
+
+class PingAllScriptTest < IntegrationTestCase
+  setup_integration_paths 'ping_all.rb', 'pinger'
+
+  def test_ping_all_script_shows_working_statuses_when_network_is_ok
+    create_mock_config(self.class::TARGET_MOCK, 'wg2_test_active.conf')
+
+    # Имитируем, что сеть полностью исправна (MOCK_VPN_FAIL = 'false' по умолчанию)
+    stdout, stderr, status = run_script
+
+    assert status.success?, "Скрипт завершился с ошибкой: #{stderr}"
+    assert_match(/Запуск полного последовательного прозвона/, stdout)
+
+    # РАБОТАЕТ
+    assert_match(/wg2_test_active\s+\[ РАБОТАЕТ \]/, stdout)
+    assert_match(/Доступно рабочих конфигураций: 1 из 1/, stdout)
+  end
+
+  def test_ping_all_script_shows_failed_statuses_when_network_fails
+    create_mock_config(self.class::TARGET_MOCK, 'wg2_test_broken.conf')
+
+    # Имитируем тотальный сбой сети или блокировку ТСПУ (MOCK_VPN_FAIL = 'true')
+    stdout, _, status = run_script(mock_fail: true)
+
+    assert status.success?, "Скрипт должен завершаться с кодом 0 даже при сбоях туннелей"
+    assert_match(/Запуск полного последовательного прозвона/, stdout)
+
+    # СБОЙ
+    assert_match(/wg2_test_broken\s+\[   СБОЙ   \]/, stdout)
+    assert_match(/Доступно рабочих конфигураций: 0 из 1/, stdout)
+  end
+
+  def test_ping_all_script_handles_empty_configurations
+    stdout, _, status = run_script
+
+    assert_match(/Запуск полного последовательного прозвона/, stdout)
+    assert_match(/Доступные конфигурации не найдены/, stdout)
+    assert status.success?
+  end
+end
