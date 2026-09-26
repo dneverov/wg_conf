@@ -34,8 +34,8 @@ class Config
     end
 
     # Рендерит разделитель интерфейса в указанный поток (по умолчанию $stdout)
-    def render_divider(stream = $stdout, length: 50)
-      stream.puts "-" * length
+    def render_divider(stream = $stdout, length: 50, char: "-")
+      stream.puts char * length
     end
 
     # Выносим инициализацию в метод класса, чтобы его можно было безопасно перезапускать
