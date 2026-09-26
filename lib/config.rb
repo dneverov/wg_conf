@@ -33,6 +33,11 @@ class Config
       Dir.glob(File.join(directory, extension_mask))
     end
 
+    # Рендерит разделитель интерфейса в указанный поток (по умолчанию $stdout)
+    def render_divider(stream = $stdout, length: 50)
+      stream.puts "-" * length
+    end
+
     # Выносим инициализацию в метод класса, чтобы его можно было безопасно перезапускать
     def load_data!
       file_path = ENV['CONFIG_PATH'] || 'config.yml'
@@ -56,7 +61,7 @@ class Config
 
       if strict
         puts "Для работы скрипта требуются права суперпользователя. Перезапуск через sudo..."
-        puts "-" * 40
+        render_divider
 
         # exec заменяет текущий процесс.
         # Он выполнит: sudo ruby vpn_run.rb -s (сохраняя все аргументы)
@@ -68,7 +73,7 @@ class Config
         puts "Примечание: Скрипт запущен без прав суперпользователя."
         puts "Если целевая папка защищена от записи, может потребоваться:"
         puts "  sudo ruby #{script_name} #{current_args}".rstrip
-        puts "-" * 40
+        render_divider
       end
     rescue SystemCallError
       puts "Ошибка: Не удалось получить права суперпользователя."
