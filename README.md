@@ -183,7 +183,7 @@ ruby ping_all.rb
 
 ## Testing Suite
 
-The project includes a robust, isolated testing infrastructure with over 70 test runs and 260+ assertions. It separates lightning-fast in-memory **unit tests** from comprehensive **integration tests** that spawn real CLI subprocesses.
+The project includes a robust, isolated testing infrastructure with over **70** test runs and **260+** assertions. It separates lightning-fast in-memory **unit tests** from comprehensive **integration tests** that spawn real CLI subprocesses.
 
 ### Running Individual Tests
 You can run any specific test file manually using the Ruby interpreter. Use the `-n` flag followed by a method name to isolate a single test case during debugging:
