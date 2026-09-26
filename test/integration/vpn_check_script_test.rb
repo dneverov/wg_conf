@@ -6,7 +6,7 @@ class VpnCheckScriptTest < IntegrationTestCase
 
   def test_script_returns_success_when_vpn_and_traffic_are_ok
     # Имитируем, что VPN успешно работает и трафик проходит
-    stdout, _, status = run_script(mock_fail: false)
+    stdout, _, status = run_script
 
     assert status.success?, "Код возврата должен быть 0 (успех)"
     assert_match(/Проверка VPN-соединения... РАБОТАЕТ/, stdout)
@@ -22,7 +22,7 @@ class VpnCheckScriptTest < IntegrationTestCase
 
   def test_script_shows_verbose_diagnostic_report_with_flag_v
     # Запускаем скрипт с флагом -v в успешном режиме
-    stdout, _, status = run_script('-v', mock_fail: false)
+    stdout, _, status = run_script('-v')
 
     assert status.success?
     assert_match(/=== ДИАГНОСТИКА VPN СОЕДИНЕНИЯ ===/, stdout)

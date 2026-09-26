@@ -6,8 +6,8 @@ class PingAllScriptTest < IntegrationTestCase
   def test_ping_all_script_shows_working_statuses_when_network_is_ok
     create_mock_config(self.class::TARGET_MOCK, 'wg2_test_active.conf')
 
-    # Имитируем, что сеть полностью исправна (MOCK_VPN_FAIL = 'false')
-    stdout, stderr, status = run_script(mock_fail: false)
+    # Имитируем, что сеть полностью исправна (MOCK_VPN_FAIL = 'false' по умолчанию)
+    stdout, stderr, status = run_script
 
     assert status.success?, "Скрипт завершился с ошибкой: #{stderr}"
     assert_match(/Запуск полного последовательного прозвона/, stdout)
@@ -32,7 +32,7 @@ class PingAllScriptTest < IntegrationTestCase
   end
 
   def test_ping_all_script_handles_empty_configurations
-    stdout, _, status = run_script(mock_fail: false)
+    stdout, _, status = run_script
 
     assert_match(/Запуск полного последовательного прозвона/, stdout)
     assert_match(/Доступные конфигурации не найдены/, stdout)
