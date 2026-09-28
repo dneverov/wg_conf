@@ -40,8 +40,8 @@ class VpnPinger
         return if ENV['TEST_ENV'] == 'true'
 
         VpnRunner.stop_connections
-        VpnRunner.start_connection(interface, show_status: false)
-        # sleep 1
+        # Передаем raise_on_fail: false, чтобы сбой systemctl не ронял пингер
+        VpnRunner.start_connection(interface, raise_on_fail: false)
       end
   end
 end

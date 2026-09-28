@@ -21,7 +21,7 @@ class VpnRunScriptTest < IntegrationTestCase
     assert_match(/\[EXEC\] systemctl stop 'awg-quick@\*'/, stdout)
 
     # Скрипт должен был завершиться на ветке IF и не уходить в запуск VPN
-    refute_match(/Attempting to run VPN/, stdout)
+    refute_match(/Попытка запуска VPN/, stdout)
   end
 
   def test_script_runs_latest_config_by_default
@@ -31,7 +31,7 @@ class VpnRunScriptTest < IntegrationTestCase
     stdout, _, status = run_script
 
     assert status.success?
-    assert_match(/Attempting to run VPN with latest config.../, stdout)
+    assert_match(/Попытка запуска VPN: последняя конфигурация.../, stdout)
     assert_match(/Инициализация VPN соединения: wg2_chi_san.../, stdout)
     assert_match(/\[EXEC\] systemctl start awg-quick@wg2_chi_san.service/, stdout)
   end
@@ -40,7 +40,7 @@ class VpnRunScriptTest < IntegrationTestCase
     stdout, _, status = run_script("wg2_uk_lon.conf")
 
     assert status.success?
-    assert_match(/Attempting to run VPN with wg2_uk_lon.conf.../, stdout)
+    assert_match(/Попытка запуска VPN: wg2_uk_lon.conf.../, stdout)
     assert_match(/\[EXEC\] systemctl start awg-quick@wg2_uk_lon.service/, stdout)
   end
 

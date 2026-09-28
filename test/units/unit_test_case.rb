@@ -35,16 +35,6 @@ class UnitTestCase < Minitest::Test
 
   private
 
-    # Глушилка вывода puts, которую можно вызвать в setup дочернего класса
-    def capture_stdout!
-      @original_stdout = $stdout
-      $stdout = StringIO.new
-    end
-
-    def restore_stdout!
-      $stdout = @original_stdout if @original_stdout
-    end
-
     # Переиспользуемый хелпер для создания файлов конфигурации
     def create_mock_config(directory, name, days_old: 0, content: 'dummy')
       file_path = File.join(directory, name)

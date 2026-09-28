@@ -29,10 +29,19 @@ config_name = ARGV[0]
 
 # Если передан флаг -s, выполняем только остановку и выходим
 if options[:stop]
+  puts "Сброс старых подключений..."
   VpnRunner.stop_connections
   exit 0
 end
 
-puts "Attempting to run VPN with #{config_name || 'latest config'}..."
+puts "Попытка запуска VPN: #{config_name || 'последняя конфигурация'}..."
 
-VpnRunner.run!(config_name, show_status: options[:status])
+begin
+  launched_interface = VpnRunner.run!(config_name, show_status: options[:status])
+  puts "VPN успешно запущен! Активный интерфейс: #{launched_interface}"
+  Config.render_divider
+rescue => e
+  # Сюда прилетят и ошибка отсутствия файлов, и ошибка падения службы systemd
+  puts "Ошибка: #{e.message}"
+  exit 1
+end

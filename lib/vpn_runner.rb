@@ -5,47 +5,53 @@ class VpnRunner
   extend SystemExecutor # Подмешивает execute_command
 
   class << self
+    def service_name_for(config_name)
+      "#{Config.vpn_service}#{config_name}.service"
+    end
+
+    # Возвращает имя запущенного интерфейса (String)
     def run!(config_name = nil, show_status: false)
-      target_dir  = Config.target_dir
       # Метод вернет имя или выбросит raise
-      config_name = get_interface_name(target_dir, config_name)
+      config_name = get_interface_name(config_name)
 
       puts "Инициализация VPN соединения: #{config_name}..."
 
-      # 1. Останавливаем любые запущенные ранее туннели awg-quick, чтобы не было конфликтов
+      # Останавливаем любые запущенные ранее туннели awg-quick, чтобы не было конфликтов
       stop_connections
 
-      # 2. Запускаем новый выбранный конфиг
-      start_connection(config_name, show_status: show_status)
+      # Просто вызываем запуск. Если будет ошибка — start_connection сам выбросит raise!
+      start_connection(config_name)
+
+      show_status_info(config_name) if show_status
+      config_name
     end
 
     def stop_connections
-      puts "Сброс старых подключений..."
       # sudo systemctl stop 'awg-quick@*'
       execute_command("systemctl stop '#{Config.vpn_service}*'")
     end
 
-    def start_connection(config_name, show_status:)
-      service_name = "#{Config.vpn_service}#{config_name}.service"
+    # По умолчанию выбрасывает ошибку, но позволяет отключить это поведение флагом
+    def start_connection(config_name, raise_on_fail: true)
+      service_name = service_name_for(config_name)
 
-      puts "Запуск сервиса #{service_name}..."
-      if execute_command("systemctl start #{service_name}")
-        puts "VPN успешно запущен!"
-        puts "-" * 40
-        show_status(config_name) if show_status
-        true
-      else
-        puts "Ошибка: Не удалось запустить сервис #{service_name}."
-        puts "Проверьте логи команды: sudo journalctl -u #{service_name} -n 20"
-        false
+      unless execute_command("systemctl start #{service_name}")
+        return false unless raise_on_fail
+
+        msg = "Не удалось запустить сервис #{service_name}.\n" \
+              "Проверьте логи команды: sudo journalctl -u #{service_name} -n 20"
+        raise msg
       end
+
+      true
     end
 
     private
 
-      def get_interface_name(target_dir, config_name = nil)
+      def get_interface_name(config_name = nil)
         # Если имя конфига не передано, ищем первый доступный .conf файл в целевой папке
         config_name ||= begin
+          target_dir = Config.target_dir
           available_configs = Config.find_files(target_dir, '*.conf')
 
           if available_configs.empty?
@@ -56,12 +62,12 @@ class VpnRunner
           available_configs.max_by { |file| File.mtime(file) }
         end
 
-        # Берем базовое имя без пути и без расширения (например, "wg2_chi_san")
+        # Возвращаем базовое имя без пути и без расширения (например, "wg2_chi_san")
         File.basename(config_name, '.conf')
       end
 
       # Вывод реального сетевого интерфейса и статуса
-      def show_status(interface_name)
+      def show_status_info(interface_name)
         puts "Текущий статус интерфейса #{interface_name}:"
         # Показывает статус утилиты wg (или awg, в зависимости от того, что установлено в системе)
         if execute_command("which awg > /dev/null 2>&1")

@@ -7,6 +7,11 @@ class ConfigTest < UnitTestCase
   # Создаем константу для .example файла на основе сгенерированной базовым классом
   EXAMPLE_FILE = "#{CONFIG_FILE}.example"
 
+  # Автоматически глушим любой puts/print во время выполнения тестов этого класса
+  def run(*args, &block)
+    Config.silence_output { super }
+  end
+
   def setup
     # Всегда явно прописываем ENV перед тестом
     ENV['CONFIG_PATH'] = CONFIG_FILE

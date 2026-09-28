@@ -30,6 +30,6 @@ OptionParser.new do |opts|
 end.parse!
 
 puts "Доступные VPN-конфигурации:"
-puts "-" * 50
+Config.render_divider
 puts VpnLister.render(sort_by: options[:sort], verbose_time: options[:verbose_time])
-puts "-" * 50
+Config.render_divider

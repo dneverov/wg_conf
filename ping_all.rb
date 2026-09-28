@@ -4,7 +4,7 @@ Config.check_root_privileges(strict: true)
 
 puts "Запуск полного последовательного прозвона VPN-конфигураций..."
 puts "Каждый туннель будет временно поднят для проверки доступности сети:"
-puts "-" * 50
+Config.render_divider
 
 # Передаем оригинальный stdout прямо в блок для вывода результатов
 results = Config.silence_output do |stdout|
@@ -19,6 +19,6 @@ if results.empty?
   exit 0
 end
 
-puts "-" * 50
+Config.render_divider
 puts "Прозвон полностью завершен."
 puts "Доступно рабочих конфигураций: #{results.count { |r| r[:active] }} из #{results.size}."

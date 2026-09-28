@@ -9,26 +9,24 @@ class CopyScriptTest < IntegrationTestCase
   TXT_MOCK_DIR = TARGET_MOCK
 
   def test_script_requires_file_name
-    # Запускаем скрипт вообще без аргументов
-    stdout, _, status = run_script
+    stdout, _, status = run_script # Запуск без аргументов
 
     refute status.success?
-    assert_match(/Error: Needs a file name!/, stdout)
-    assert_match(/E.g.:  ruby copy.rb/, stdout)
+    assert_match(/Usage: ruby copy.rb/, stdout)
   end
 
   def test_script_copies_file_with_auto_renaming
-    # 1. Создаем фейковый исходный файл в папке src_mock
-    create_mock_config(SRC_MOCK_DIR, 'ChileSantiago.conf')
+    # Создаем фейковый исходный файл в папке src_mock
+    create_mock_config(self.class::SRC_MOCK, 'ChileSantiago.conf')
 
-    # 2. Запускаем скрипт, передав только имя файла (target_name = nil)
+    # Запускаем скрипт, передав только имя файла (target_name = nil)
     stdout, _, status = run_script('ChileSantiago.conf')
 
     assert status.success?
-    assert_match(/Attempting to copy ChileSantiago.conf to system folder.../, stdout)
     assert_match(/Done! The file has been copied to/, stdout)
+    assert_match(/sudo systemctl start awg-quick@wg2_chi_san.service/, stdout)
 
-    # 3. Проверяем, что файл физически скопировался в целевую папку и переименовался через Namer
+    # Проверяем, что файл физически скопировался в целевую папку и переименовался через Namer
     assert File.exist?(File.join(TXT_MOCK_DIR, 'wg2_chi_san.conf'))
   end
 

@@ -27,7 +27,7 @@ is_active =
     puts "Сетевой интерфейс      : #{status[:interface_name] || 'НЕ ПОДНЯТ'}"
     puts "Хост проверки трафика  : #{status[:ping_host]}"
     puts "Прохождение пинга      : #{status[:ping_successful] ? 'УСПЕШНО' : 'СБОЙ / БЛОКИРОВКА ТСПУ'}"
-    puts "=" * 34
+    Config.render_divider(length: 34, char: "=")
 
     status[:ping_successful]
   else

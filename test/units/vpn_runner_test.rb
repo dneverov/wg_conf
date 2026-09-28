@@ -7,6 +7,11 @@ class VpnRunnerTest < UnitTestCase
   # Для обратной совместимости со старыми тестами
   TARGET_MOCK = TXT_MOCK_DIR
 
+  # Переопределяем метод run, чтобы автоматически выполнять каждый тест "в тишине"
+  def run(*args, &block)
+    Config.silence_output { super }
+  end
+
   def setup
     super # Вызываем базовый setup для создания папок
 
@@ -23,15 +28,9 @@ class VpnRunnerTest < UnitTestCase
       commands_array << cmd # Пишем в локальную переменную, контекст её видит!
       true
     end
-
-    # Глушим puts, чтобы лог тестов оставался чистым
-    capture_stdout!
   end
 
   def teardown
-    # Возвращаем оригинальный вывод системе
-    restore_stdout!
-
     # 3. Восстанавливаем оригинальные методы из файлов lib/
     restore_method(Config, :target_dir, :orig_target)
     restore_method(VpnRunner, :execute_command, :orig_execute)
@@ -83,7 +82,7 @@ class VpnRunnerTest < UnitTestCase
     assert_empty @executed_commands
   end
 
-  def test_returns_false_if_systemctl_command_fails
+  def test_raises_error_if_systemctl_command_fails
     # Локально меняем поведение нашего фейкового метода на время одного теста
     VpnRunner.singleton_class.class_eval do
       remove_method :execute_command
@@ -92,7 +91,10 @@ class VpnRunnerTest < UnitTestCase
       end
     end
 
-    refute VpnRunner.run!("wg2_chi_san")
+    # Теперь мы ожидаем, что метод выбросит RuntimeError при сбое запуска
+    assert_raises(RuntimeError) do
+      VpnRunner.run!("wg2_chi_san")
+    end
   ensure
     # Обязательно возвращаем базовую заглушку обратно для корректного teardown
     replace_method(VpnRunner, :execute_command, :orig_execute) do |cmd|
