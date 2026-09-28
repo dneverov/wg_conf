@@ -33,6 +33,6 @@ if options[:stop]
   exit 0
 end
 
-puts "Attempting to run VPN with #{config_name || 'latest config'}..."
+puts "Попытка запуска VPN: #{config_name || 'последняя конфигурация'}..."
 
 VpnRunner.run!(config_name, show_status: options[:status])
