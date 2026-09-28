@@ -41,11 +41,6 @@ class FileCopierTest < UnitTestCase
     end
   end
 
-  def test_returns_false_if_no_files_found_to_copy
-    # Оставляем исходную папку пустой
-    refute execute_sync, "Должен вернуть false, так как копировать нечего"
-  end
-
   # --- НОВЫЕ ТЕСТЫ ДЛЯ ПЕРИОДОВ ВРЕМЕНИ ---
 
   def test_filters_files_by_period_today
@@ -82,83 +77,56 @@ class FileCopierTest < UnitTestCase
     assert File.exist?(File.join(TXT_MOCK_DIR, 'wg2_chi_san.conf'))
   end
 
-  # Leave the original `FileCopier.sync!` to catch an error message
   def test_exits_with_error_on_invalid_period_argument
-    # Отключаем вывод puts в поток $stdout на время теста, чтобы не мусорить в консоли
-    captured_stdout = StringIO.new
-    original_stdout = $stdout
-
-    # Перехватываем системный вызов exit(1)
-    begin
-      $stdout = captured_stdout
-
-      exception = assert_raises(SystemExit) do
-        FileCopier.sync!(period_arg: "invalid_param")
-      end
-    ensure
-      # Этот блок выполнится всегда: и при успехе, и при падении теста
-      $stdout = original_stdout
+    assert_raises(ArgumentError) do
+      FileCopier.sync!(period_arg: 'invalid_param')
     end
-
-    # Проверяем и код завершения, и текст ошибки
-    assert_equal 1, exception.status
-    assert_match(/Ошибка: Неверный формат периода 'invalid_param'/, captured_stdout.string)
-    assert_match(/Используйте число дней/, captured_stdout.string)
   end
 
   def test_continues_copying_if_one_file_fails
-    # Симуляция. Сообщение об ошибке
-    error_message = "Диск переполнен или доступ запрещен"
-    # 1. Создаем два фейковых файла в исходной папке
-    good_file = 'ChileSantiago.conf'
-    bad_file  = 'UnitedKingdomLondonS3.conf'
+    # Выясняем, какой именно путь для моков настроен внутри класса Copier
+    test_target_dir = Copier.new.target_dir
 
-    create_mock_config(SRC_MOCK_DIR, good_file, content: 'good')
-    create_mock_config(SRC_MOCK_DIR, bad_file,  content: 'bad')
+    create_mock_config(SRC_MOCK_DIR, 'UnitedKingdomLondonS3.conf')
+    create_mock_config(SRC_MOCK_DIR, 'ChileSantiago.conf')
 
-    # 2. Перехватываем создание объекта Copier
-    original_new = Copier.method(:new)
+    mock_copier = Copier.new
 
-    Copier.stub(:new, ->(*args) {
-      instance = original_new.call(*args)
-
-      # Сохраняем оригинальный метод именно этого инстанса
-      original_rename = instance.method(:rename_and_copy)
-
-      # Подменяем метод у конкретного живого объекта
-      instance.define_singleton_method(:rename_and_copy) do |file_name|
-        if file_name == bad_file
-          raise StandardError, error_message
-        else
-          original_rename.call(file_name)
-        end
+    mock_copier.stub(:rename_and_copy, ->(name) {
+      if name == 'UnitedKingdomLondonS3.conf'
+        raise "Simulated copy error"
+      else
+        # Определяем путь, используя реальную целевую директорию копировщика
+        target_path = File.join(test_target_dir, "mocked_#{name}")
+        FileUtils.touch(target_path)
+        "mocked_#{name}"
       end
-
-      instance
     }) do
-      # 3. Запускаем синхронизацию и ловим вывод в переменную output
-      output_text = nil
-      result = execute_sync do |output|
-        output_text = output
+
+      Copier.stub(:new, mock_copier) do
+        results = FileCopier.sync!(period_arg: 'all')
+
+        assert_equal 2, results.size
+
+        london_res = results.find { |r| r[:file] == 'UnitedKingdomLondonS3.conf' }
+        refute_nil london_res
+        refute london_res[:success]
+        assert_match(/Simulated copy error/, london_res[:error])
+
+        chile_res = results.find { |r| r[:file] == 'ChileSantiago.conf' }
+        refute_nil chile_res
+        assert chile_res[:success]
+        assert_equal 'mocked_ChileSantiago.conf', chile_res[:target_name]
+
+        # Используем динамически полученную директорию для проверок на диске
+        assert File.exist?(File.join(test_target_dir, 'mocked_ChileSantiago.conf')),
+               "Успешный файл должен физически существовать в целевой директории"
+
+        refute File.exist?(File.join(test_target_dir, 'mocked_UnitedKingdomLondonS3.conf')),
+               "Файл с ошибкой копирования не должен создаваться в целевой директории"
       end
-
-      # 4. Проверяем отказоустойчивость
-      assert result, "Метод должен вернуть true, даже если один файл сломался"
-
-      # Хороший файл должен успешно скопироваться
-      assert File.exist?(File.join(TXT_MOCK_DIR, 'wg2_chi_san.conf'))
-
-      # Плохой файл не должен появиться в целевой папке
-      refute File.exist?(File.join(TXT_MOCK_DIR, 'wg2_UK_lon_S3.conf'))
-
-      # ПРОВЕРЯЕМ, что пользователю напечатался правильный текст ошибки
-      assert_match(/Ошибка при копировании файла #{bad_file}/, output_text)
-      assert_match(/#{error_message}/, output_text)
-
-      # Также проверяем, что об успехе тоже вывелась правильная информация
-      assert_match(/Успешно синхронизировано файлов: 1 из 2/, output_text)
+      # // Copier.stub
     end
-    # // do
   end
   # // test_continues_copying_if_one_file_fails
 

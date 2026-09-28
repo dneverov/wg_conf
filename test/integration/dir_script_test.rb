@@ -47,7 +47,7 @@ class DirScriptTest < IntegrationTestCase
 
     refute status.success?, "Скрипт должен завершиться с ошибкой"
     assert_equal 1, status.exitstatus
-    assert_match(/Ошибка: Неверный формат периода 'invalid_param'/, stdout)
+    assert_match(/Ошибка валидации: Неверный формат периода 'invalid_param'/, stdout)
   end
 
   def test_script_shows_help
