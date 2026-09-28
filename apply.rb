@@ -6,7 +6,7 @@ Config.check_root_privileges
 options = { period: "0" }
 
 OptionParser.new do |opts|
-  opts.banner = "Использование: ruby dir.rb [options]"
+  opts.banner = "Использование: ruby apply.rb [options]"
 
   opts.on("-p", "--period PERIOD", "Период фильтрации: число дней (например, 3), 0 (сегодня) или all (все файлы)") do |p|
     options[:period] = p

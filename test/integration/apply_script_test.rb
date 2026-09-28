@@ -1,8 +1,8 @@
 require_relative 'integration_test_case'
 
-class DirScriptTest < IntegrationTestCase
+class ApplyScriptTest < IntegrationTestCase
   # Генерирует константы SCRIPT_PATH, TEST_DIR, TARGET_MOCK и SRC_MOCK внутри класса
-  setup_integration_paths 'dir.rb', 'dir'
+  setup_integration_paths 'apply.rb', 'apply'
 
   # Переопределяем константы для обратной совместимости со старыми тестами
   SRC_MOCK_DIR = SRC_MOCK
@@ -54,7 +54,7 @@ class DirScriptTest < IntegrationTestCase
     stdout, _, status = run_script("-h")
 
     assert status.success?
-    assert_match(/Использование: ruby dir.rb/, stdout)
+    assert_match(/Использование: ruby apply.rb/, stdout)
     assert_match(/-p, --period PERIOD/, stdout)
   end
 end
