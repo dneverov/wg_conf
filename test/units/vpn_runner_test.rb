@@ -82,7 +82,7 @@ class VpnRunnerTest < UnitTestCase
     assert_empty @executed_commands
   end
 
-  def test_returns_false_if_systemctl_command_fails
+  def test_raises_error_if_systemctl_command_fails
     # Локально меняем поведение нашего фейкового метода на время одного теста
     VpnRunner.singleton_class.class_eval do
       remove_method :execute_command
@@ -91,7 +91,10 @@ class VpnRunnerTest < UnitTestCase
       end
     end
 
-    refute VpnRunner.run!("wg2_chi_san")
+    # Теперь мы ожидаем, что метод выбросит RuntimeError при сбое запуска
+    assert_raises(RuntimeError) do
+      VpnRunner.run!("wg2_chi_san")
+    end
   ensure
     # Обязательно возвращаем базовую заглушку обратно для корректного teardown
     replace_method(VpnRunner, :execute_command, :orig_execute) do |cmd|

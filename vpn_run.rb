@@ -36,16 +36,12 @@ end
 
 puts "Попытка запуска VPN: #{config_name || 'последняя конфигурация'}..."
 
-# Запускаем и получаем либо имя интерфейса, либо false
-launched_interface = VpnRunner.run!(config_name, show_status: options[:status])
-
-if launched_interface
+begin
+  launched_interface = VpnRunner.run!(config_name, show_status: options[:status])
   puts "VPN успешно запущен! Активный интерфейс: #{launched_interface}"
   Config.render_divider
-else
-  # Если запуск провалился, выводим диагностическую ошибку здесь
-  failed_service = "#{Config.vpn_service}#{config_name || 'selected'}.service"
-  puts "Ошибка: Не удалось запустить сервис #{failed_service}."
-  puts "Проверьте логи команды: sudo journalctl -u #{failed_service} -n 20"
+rescue => e
+  # Сюда прилетят и ошибка отсутствия файлов, и ошибка падения службы systemd
+  puts "Ошибка: #{e.message}"
   exit 1
 end

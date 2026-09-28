@@ -5,6 +5,10 @@ class VpnRunner
   extend SystemExecutor # Подмешивает execute_command
 
   class << self
+    def service_name_for(config_name)
+      "#{Config.vpn_service}#{config_name}.service"
+    end
+
     # Возвращает имя запущенного интерфейса (String)
     def run!(config_name = nil, show_status: false)
       # Метод вернет имя или выбросит raise
@@ -20,7 +24,10 @@ class VpnRunner
         show_status_info(config_name) if show_status
         config_name
       else
-        false
+        service_name = service_name_for(config_name)
+        msg = "Не удалось запустить сервис #{service_name}.\n" \
+              "Проверьте логи команды: sudo journalctl -u #{service_name} -n 20"
+        raise msg
       end
     end
 
@@ -31,7 +38,7 @@ class VpnRunner
 
     # Просто запускает соединение и возвращает true/false
     def start_connection(config_name)
-      service_name = "#{Config.vpn_service}#{config_name}.service"
+      service_name = service_name_for(config_name)
       execute_command("systemctl start #{service_name}")
     end
 
@@ -51,7 +58,7 @@ class VpnRunner
           available_configs.max_by { |file| File.mtime(file) }
         end
 
-        # Берем базовое имя без пути и без расширения (например, "wg2_chi_san")
+        # Возвращаем базовое имя без пути и без расширения (например, "wg2_chi_san")
         File.basename(config_name, '.conf')
       end
 
