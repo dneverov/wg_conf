@@ -7,9 +7,8 @@ class VpnRunner
   class << self
     # Возвращает имя запущенного интерфейса (String)
     def run!(config_name = nil, show_status: false)
-      target_dir  = Config.target_dir
       # Метод вернет имя или выбросит raise
-      config_name = get_interface_name(target_dir, config_name)
+      config_name = get_interface_name(config_name)
 
       puts "Инициализация VPN соединения: #{config_name}..."
 
@@ -38,9 +37,10 @@ class VpnRunner
 
     private
 
-      def get_interface_name(target_dir, config_name = nil)
+      def get_interface_name(config_name = nil)
         # Если имя конфига не передано, ищем первый доступный .conf файл в целевой папке
         config_name ||= begin
+          target_dir = Config.target_dir
           available_configs = Config.find_files(target_dir, '*.conf')
 
           if available_configs.empty?
