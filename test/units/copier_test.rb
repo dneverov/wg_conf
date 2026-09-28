@@ -1,6 +1,5 @@
 require_relative 'unit_test_case'
 require_relative '../../lib/namer'
-# Подключаем тестируемый класс
 require_relative '../../lib/copier'
 
 class CopierTest < UnitTestCase
@@ -16,15 +15,9 @@ class CopierTest < UnitTestCase
     replace_method(Namer, :new_config_name, :orig_name) { |source| "mocked_#{source}" }
 
     @copier = Copier.new
-
-    # Глушим puts одной короткой базовой командой
-    capture_stdout!
   end
 
   def teardown
-    # Возвращаем вывод системе
-    restore_stdout!
-
     # Восстанавливаем оригинальные методы из файлов lib/
     restore_method(Config, :source_dir, :orig_source)
     restore_method(Config, :target_dir, :orig_target)
@@ -50,13 +43,15 @@ class CopierTest < UnitTestCase
       exit_stub = lambda { raise "system_exit_triggered" }
 
       @copier.stub :exit, exit_stub do
-        assert_raises(RuntimeError, "system_exit_triggered") do
-          @copier.copy('missing.conf', 'target.conf')
+        # Используем встроенный capture_io от Minitest
+        stdout, _stderr = capture_io do
+          assert_raises(RuntimeError, "system_exit_triggered") do
+            @copier.copy('missing.conf', 'target.conf')
+          end
         end
 
-        # Проверяем, что лог об ошибке был выведен в консоль
-        $stdout.rewind
-        assert_match(/Error: File .*missing.conf not found!/, $stdout.read)
+        # Проверяем перехваченный текст
+        assert_match(/Error: File .*missing.conf not found!/, stdout)
       end
     end
   end
@@ -72,7 +67,9 @@ class CopierTest < UnitTestCase
       }
 
       @copier.stub :system_copy, mock_system_copy do
-        assert @copier.copy('amnezia.conf', 'target.conf')
+        result = nil
+        capture_io { result = @copier.copy('amnezia.conf', 'target.conf') }
+        assert result
       end
     end
   end
@@ -80,7 +77,8 @@ class CopierTest < UnitTestCase
   def test_rename_and_copy_uses_namer_if_target_is_nil
     File.stub :exist?, true do
       @copier.stub :system_copy, true do
-        result = @copier.rename_and_copy('amnezia.conf')
+        result = nil
+        capture_io { result = @copier.rename_and_copy('amnezia.conf') }
         assert_equal 'mocked_amnezia.conf', result
       end
     end
@@ -89,7 +87,8 @@ class CopierTest < UnitTestCase
   def test_rename_and_copy_uses_provided_target
     File.stub :exist?, true do
       @copier.stub :system_copy, true do
-        result = @copier.rename_and_copy('amnezia.conf', 'custom.conf')
+        result = nil
+        capture_io { result = @copier.rename_and_copy('amnezia.conf', 'custom.conf') }
         assert_equal 'custom.conf', result
       end
     end
@@ -98,15 +97,15 @@ class CopierTest < UnitTestCase
   def test_copy_config_file_shows_log_and_instructions
     File.stub :exist?, true do
       @copier.stub :system_copy, true do
-        @copier.copy_config_file('amnezia.conf', 'custom.conf', show_log: true, instruction: true)
-
-        $stdout.rewind
-        output = $stdout.read
+        # Перехватываем вывод через capture_io
+        stdout, _stderr = capture_io do
+          @copier.copy_config_file('amnezia.conf', 'custom.conf', show_log: true, instruction: true)
+        end
 
         # Проверяем логи вывода
-        assert_match(/Done! The file has been copied to \/mock\/target\/custom.conf/, output)
-        assert_match(/To run the new configuration:/, output)
-        assert_match(/sudo systemctl start awg-quick@custom.service/, output)
+        assert_match(/Done! The file has been copied to \/mock\/target\/custom.conf/, stdout)
+        assert_match(/To run the new configuration:/, stdout)
+        assert_match(/sudo systemctl start awg-quick@custom.service/, stdout)
       end
     end
   end
@@ -115,11 +114,12 @@ class CopierTest < UnitTestCase
     File.stub :exist?, true do
       # Симулируем ошибку копирования (например, неверный пароль sudo)
       @copier.stub :system_copy, false do
-        @copier.copy_config_file('amnezia.conf', 'custom.conf', show_log: true)
+        # Перехватываем вывод через capture_io
+        stdout, _stderr = capture_io do
+          @copier.copy_config_file('amnezia.conf', 'custom.conf', show_log: true)
+        end
 
-        $stdout.rewind
-        output = $stdout.read
-        assert_match(/Failed to copy file. The sudo password may be incorrect./, output)
+        assert_match(/Failed to copy file. The sudo password may be incorrect./, stdout)
       end
     end
   end
