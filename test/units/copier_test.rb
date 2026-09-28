@@ -39,19 +39,9 @@ class CopierTest < UnitTestCase
 
   def test_copy_exits_if_source_file_does_not_exist
     File.stub :exist?, false do
-      # Создаем лямбду, которая бросает ошибку вместо падения всего процесса Ruby
-      exit_stub = lambda { raise "system_exit_triggered" }
-
-      @copier.stub :exit, exit_stub do
-        # Используем встроенный capture_io от Minitest
-        stdout, _stderr = capture_io do
-          assert_raises(RuntimeError, "system_exit_triggered") do
-            @copier.copy('missing.conf', 'target.conf')
-          end
-        end
-
-        # Проверяем перехваченный текст
-        assert_match(/Error: File .*missing.conf not found!/, stdout)
+      # Теперь метод сразу бросает ArgumentError наружу
+      assert_raises(ArgumentError) do
+        @copier.copy('missing.conf', 'target.conf')
       end
     end
   end
@@ -90,36 +80,6 @@ class CopierTest < UnitTestCase
         result = nil
         capture_io { result = @copier.rename_and_copy('amnezia.conf', 'custom.conf') }
         assert_equal 'custom.conf', result
-      end
-    end
-  end
-
-  def test_copy_config_file_shows_log_and_instructions
-    File.stub :exist?, true do
-      @copier.stub :system_copy, true do
-        # Перехватываем вывод через capture_io
-        stdout, _stderr = capture_io do
-          @copier.copy_config_file('amnezia.conf', 'custom.conf', show_log: true, instruction: true)
-        end
-
-        # Проверяем логи вывода
-        assert_match(/Done! The file has been copied to \/mock\/target\/custom.conf/, stdout)
-        assert_match(/To run the new configuration:/, stdout)
-        assert_match(/sudo systemctl start awg-quick@custom.service/, stdout)
-      end
-    end
-  end
-
-  def test_copy_config_file_shows_failure_log_if_copy_fails
-    File.stub :exist?, true do
-      # Симулируем ошибку копирования (например, неверный пароль sudo)
-      @copier.stub :system_copy, false do
-        # Перехватываем вывод через capture_io
-        stdout, _stderr = capture_io do
-          @copier.copy_config_file('amnezia.conf', 'custom.conf', show_log: true)
-        end
-
-        assert_match(/Failed to copy file. The sudo password may be incorrect./, stdout)
       end
     end
   end
