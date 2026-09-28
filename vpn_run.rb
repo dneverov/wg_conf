@@ -29,6 +29,7 @@ config_name = ARGV[0]
 
 # Если передан флаг -s, выполняем только остановку и выходим
 if options[:stop]
+  puts "Сброс старых подключений..."
   VpnRunner.stop_connections
   exit 0
 end

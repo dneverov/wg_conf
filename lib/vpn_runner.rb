@@ -20,7 +20,6 @@ class VpnRunner
     end
 
     def stop_connections
-      puts "Сброс старых подключений..."
       # sudo systemctl stop 'awg-quick@*'
       execute_command("systemctl stop '#{Config.vpn_service}*'")
     end
