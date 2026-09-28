@@ -40,8 +40,7 @@ class VpnPinger
         return if ENV['TEST_ENV'] == 'true'
 
         VpnRunner.stop_connections
-        VpnRunner.start_connection(interface, show_status: false)
-        # sleep 1
+        VpnRunner.start_connection(interface)
       end
   end
 end

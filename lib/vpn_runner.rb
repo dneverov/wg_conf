@@ -5,6 +5,7 @@ class VpnRunner
   extend SystemExecutor # Подмешивает execute_command
 
   class << self
+    # Возвращает имя запущенного интерфейса (String)
     def run!(config_name = nil, show_status: false)
       target_dir  = Config.target_dir
       # Метод вернет имя или выбросит raise
@@ -16,7 +17,12 @@ class VpnRunner
       stop_connections
 
       # 2. Запускаем новый выбранный конфиг
-      start_connection(config_name, show_status: show_status)
+      if start_connection(config_name)
+        show_status_info(config_name) if show_status
+        config_name
+      else
+        false
+      end
     end
 
     def stop_connections
@@ -24,20 +30,10 @@ class VpnRunner
       execute_command("systemctl stop '#{Config.vpn_service}*'")
     end
 
-    def start_connection(config_name, show_status:)
+    # Просто запускает соединение и возвращает true/false
+    def start_connection(config_name)
       service_name = "#{Config.vpn_service}#{config_name}.service"
-
-      puts "Запуск сервиса #{service_name}..."
-      if execute_command("systemctl start #{service_name}")
-        puts "VPN успешно запущен!"
-        Config.render_divider
-        show_status(config_name) if show_status
-        true
-      else
-        puts "Ошибка: Не удалось запустить сервис #{service_name}."
-        puts "Проверьте логи команды: sudo journalctl -u #{service_name} -n 20"
-        false
-      end
+      execute_command("systemctl start #{service_name}")
     end
 
     private
@@ -60,7 +56,7 @@ class VpnRunner
       end
 
       # Вывод реального сетевого интерфейса и статуса
-      def show_status(interface_name)
+      def show_status_info(interface_name)
         puts "Текущий статус интерфейса #{interface_name}:"
         # Показывает статус утилиты wg (или awg, в зависимости от того, что установлено в системе)
         if execute_command("which awg > /dev/null 2>&1")
