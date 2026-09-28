@@ -132,6 +132,33 @@ class FileCopierTest < UnitTestCase
   end
   # // test_continues_copying_if_one_file_fails
 
+  def test_sync_handles_system_copy_failures_due_to_permissions
+    # Готовим тестовый конфиг в исходной папке
+    create_mock_config(SRC_MOCK_DIR, 'ChileSantiago.conf')
+
+    mock_copier = Copier.new
+
+    # Симулируем поведение класса Copier при ошибке записи (теперь он бросает RuntimeError)
+    mock_copier.stub(:rename_and_copy, ->(_name) {
+      raise RuntimeError, "System copy failed (check write permissions)"
+    }) do
+
+      Copier.stub(:new, mock_copier) do
+        results = FileCopier.sync!(period_arg: 'all')
+
+        assert_equal 1, results.size
+
+        file_res = results.first
+        # Проверяем, что FileCopier зафиксировал ошибку, а не ложный успех
+        refute file_res[:success], "Файл не должен помечаться как успешный при сбое cp"
+        assert_match(/System copy failed/, file_res[:error])
+      end
+
+    end
+    # // mock_copier.stub
+  end
+  # // test_sync_handles_system_copy_failures_due_to_permissions
+
   private
 
     # A wrapper method for the `FileCopier.sync!`
