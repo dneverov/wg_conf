@@ -7,41 +7,34 @@ class FileCopier
   class << self
     def sync!(period_arg: "0")
       # 1. Валидация директорий и входных данных
-      source, target = validate_directories!
+      source, _ = validate_directories!
       period = parse_and_validate_period!(period_arg)
 
       # 2. Поиск конфигурационных файлов
       files = find_config_files(source)
-      return false unless files # Прерываем, если метод вернул false
 
       # 3. Фильтрация по дате
       recent_files = filter_files(files, period: period)
 
       # 4. Процесс копирования
-      copy_files!(recent_files, target)
+      copy_files!(recent_files)
     end
 
     private
 
-      # Выполняет копирование файлов с обработкой ошибок
-      def copy_files!(files_to_copy, target_dir)
+      # Возвращает массив хэшей с результатами по каждому файлу
+      def copy_files!(files_to_copy)
         copier = Copier.new
-        copied_count = 0
 
-        files_to_copy.each do |file_path|
+        files_to_copy.map do |file_path|
           file_name = File.basename(file_path)
-
           begin
             target_name = copier.rename_and_copy(file_name)
-            puts "Скопирован: #{file_name} -> #{copier.set_path(target_dir, target_name)}"
-            copied_count += 1
+            { file: file_name, success: true, target_name: target_name }
           rescue StandardError => e
-            puts "Ошибка при копировании файла #{file_name}: #{e.message}"
+            { file: file_name, success: false, error: e.message }
           end
         end
-
-        puts "Успешно синхронизировано файлов: #{copied_count} из #{files_to_copy.size}."
-        true
       end
 
       # Ищет поддерживаемые типы файлов в папке-источнике
@@ -49,8 +42,7 @@ class FileCopier
         files = Config.find_files(source, '*.{conf,wg,json,vpn}')
 
         if files.empty?
-          puts "В папке #{source} не найдено файлов конфигураций для копирования."
-          return false
+          raise RuntimeError, "В папке #{source} не найдено файлов конфигураций для копирования."
         end
 
         files
@@ -61,7 +53,6 @@ class FileCopier
         # Если :all, сразу возвращаем файлы и выходим из метода
         return files.select { |f| File.file?(f) } if period == :all
 
-        # Гарантированно создаем диапазон дат (для 0, 3, 10 и т.д.)
         date_range = (Date.today - period)..Date.today
 
         files.select do |file|
@@ -83,9 +74,7 @@ class FileCopier
       # Проверяет строку из консоли и преобразует в правильный тип данных
       def parse_and_validate_period!(period_arg)
         unless period_arg == "all" || period_arg =~ /\A\d+\z/
-          puts "Ошибка: Неверный формат периода '#{period_arg}'."
-          puts "Используйте число дней (например: -p 3), 0 для сегодняшних файлов или 'all' для всех."
-          exit 1
+          raise ArgumentError, "Неверный формат периода '#{period_arg}'. Используйте число дней (например: -p 3), 0 или 'all'."
         end
 
         period_arg == "all" ? :all : period_arg.to_i
