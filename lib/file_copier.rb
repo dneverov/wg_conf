@@ -22,15 +22,18 @@ class FileCopier
 
     private
 
-      # Возвращает массив хэшей с результатами по каждому файлу
       def copy_files!(files_to_copy)
         copier = Copier.new
+        target_dir = Config.target_dir
 
         files_to_copy.map do |file_path|
           file_name = File.basename(file_path)
           begin
             target_name = copier.rename_and_copy(file_name)
-            { file: file_name, success: true, target_name: target_name }
+            # Сразу генерируем полный финальный путь назначения
+            full_target_path = copier.set_path(target_dir, target_name)
+
+            { file: file_name, success: true, target_path: full_target_path }
           rescue StandardError => e
             { file: file_name, success: false, error: e.message }
           end

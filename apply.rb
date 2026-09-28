@@ -29,18 +29,17 @@ begin
     exit 0
   end
 
-  copied_count = 0
-  copier = Copier.new
-
+  # Скрипт просто выводит готовые данные из отчета
   results.each do |res|
     if res[:success]
-      target_path = copier.set_path(Config.target_dir, res[:target_name])
-      puts "Скопирован: #{res[:file]} -> #{target_path}"
-      copied_count += 1
+      puts "Скопирован: #{res[:file]} -> #{res[:target_path]}"
     else
       puts "Ошибка при копировании файла #{res[:file]}: #{res[:error]}"
     end
   end
+
+  # Считаем успешные прямо из массива результатов одной красивой строчкой
+  copied_count = results.count { |res| res[:success] }
 
   Config.render_divider
   puts "Успешно синхронизировано файлов: #{copied_count} из #{results.size}."

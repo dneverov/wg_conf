@@ -116,7 +116,9 @@ class FileCopierTest < UnitTestCase
         chile_res = results.find { |r| r[:file] == 'ChileSantiago.conf' }
         refute_nil chile_res
         assert chile_res[:success]
-        assert_equal 'mocked_ChileSantiago.conf', chile_res[:target_name]
+
+        expected_path = File.join(test_target_dir, 'mocked_ChileSantiago.conf')
+        assert_equal expected_path, chile_res[:target_path]
 
         # Используем динамически полученную директорию для проверок на диске
         assert File.exist?(File.join(test_target_dir, 'mocked_ChileSantiago.conf')),
