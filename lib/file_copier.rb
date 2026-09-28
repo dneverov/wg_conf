@@ -6,17 +6,17 @@ require_relative 'copier'
 class FileCopier
   class << self
     def sync!(period_arg: "0")
-      # 1. Валидация директорий и входных данных
+      # Валидация директорий и входных данных
       source, _ = validate_directories!
       period = parse_and_validate_period!(period_arg)
 
-      # 2. Поиск конфигурационных файлов
+      # Поиск конфигурационных файлов
       files = find_config_files(source)
 
-      # 3. Фильтрация по дате
+      # Фильтрация по дате
       recent_files = filter_files(files, period: period)
 
-      # 4. Процесс копирования
+      # Копирование
       copy_files!(recent_files)
     end
 
