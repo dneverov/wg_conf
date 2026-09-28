@@ -16,19 +16,14 @@ class VpnRunner
 
       puts "Инициализация VPN соединения: #{config_name}..."
 
-      # 1. Останавливаем любые запущенные ранее туннели awg-quick, чтобы не было конфликтов
+      # Останавливаем любые запущенные ранее туннели awg-quick, чтобы не было конфликтов
       stop_connections
 
-      # 2. Запускаем новый выбранный конфиг
-      if start_connection(config_name)
-        show_status_info(config_name) if show_status
-        config_name
-      else
-        service_name = service_name_for(config_name)
-        msg = "Не удалось запустить сервис #{service_name}.\n" \
-              "Проверьте логи команды: sudo journalctl -u #{service_name} -n 20"
-        raise msg
-      end
+      # Просто вызываем запуск. Если будет ошибка — start_connection сам выбросит raise!
+      start_connection(config_name)
+
+      show_status_info(config_name) if show_status
+      config_name
     end
 
     def stop_connections
@@ -36,10 +31,19 @@ class VpnRunner
       execute_command("systemctl stop '#{Config.vpn_service}*'")
     end
 
-    # Просто запускает соединение и возвращает true/false
-    def start_connection(config_name)
+    # По умолчанию выбрасывает ошибку, но позволяет отключить это поведение флагом
+    def start_connection(config_name, raise_on_fail: true)
       service_name = service_name_for(config_name)
-      execute_command("systemctl start #{service_name}")
+
+      unless execute_command("systemctl start #{service_name}")
+        return false unless raise_on_fail
+
+        msg = "Не удалось запустить сервис #{service_name}.\n" \
+              "Проверьте логи команды: sudo journalctl -u #{service_name} -n 20"
+        raise msg
+      end
+
+      true
     end
 
     private
