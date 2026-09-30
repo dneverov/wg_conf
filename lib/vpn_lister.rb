@@ -30,7 +30,12 @@ class VpnLister
       # 1. Шаг: Собираем файлы и сразу нормализуем их в понятную структуру хэшей
       def fetch_and_normalize_files
         target_dir = Config.target_dir
-        all_files  = Config.find_files(target_dir, '*.conf')
+
+        unless File.directory?(target_dir) && File.readable?(target_dir)
+          raise Errno::EACCES, "Недостаточно прав для чтения директории #{target_dir}."
+        end
+
+        all_files = Config.find_files(target_dir, '*.conf')
 
         all_files.map do |f|
           full_path = f.start_with?('/') ? f : File.join(target_dir, f)
