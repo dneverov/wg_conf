@@ -34,7 +34,13 @@ Config.render_divider
 
 begin
   puts VpnLister.render(sort_by: options[:sort], verbose_time: options[:verbose_time])
+rescue Errno::EACCES => e
+  # Перехватываем ошибку отсутствия прав доступа
+  puts "Ошибка доступа: #{e.message}"
+  puts "Пожалуйста, перезапустите скрипт с правами суперпользователя:"
+  puts "  sudo ruby list.rb"
 rescue RuntimeError => e
+  # Перехватываем уведомление о том, что папка пуста
   puts e.message
 end
 
