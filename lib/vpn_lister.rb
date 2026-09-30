@@ -5,7 +5,10 @@ class VpnLister
     # Основной метод, который возвращает готовую строку для вывода в терминал
     def render(sort_by: :name, columns: 3, verbose_time: false)
       files = fetch_and_normalize_files
-      return "В папке конфигураций нет доступных VPN-интерфейсов." if files.empty?
+
+      if files.empty?
+        raise RuntimeError, "В папке конфигураций нет доступных VPN-интерфейсов."
+      end
 
       sorted_files = sort_files(files, sort_by)
 

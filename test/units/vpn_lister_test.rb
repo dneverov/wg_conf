@@ -5,8 +5,9 @@ class VpnListerTest < UnitTestCase
   setup_unit_paths 'lister'
 
   def test_returns_friendly_message_if_directory_is_empty
-    output = VpnLister.render
-    assert_match(/нет доступных VPN-интерфейсов/, output)
+    assert_raises(RuntimeError) do
+      VpnLister.render
+    end
   end
 
   def test_sorts_by_name_vertical_columns

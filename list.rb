@@ -31,5 +31,11 @@ end.parse!
 
 puts "Доступные VPN-конфигурации:"
 Config.render_divider
-puts VpnLister.render(sort_by: options[:sort], verbose_time: options[:verbose_time])
+
+begin
+  puts VpnLister.render(sort_by: options[:sort], verbose_time: options[:verbose_time])
+rescue RuntimeError => e
+  puts e.message
+end
+
 Config.render_divider
