@@ -21,7 +21,12 @@ class Copier
       raise ArgumentError, "File #{source_path} not found!"
     end
 
-    system_copy(source_path, target_path)
+    # Проверяем статус системной команды cp
+    unless system_copy(source_path, target_path)
+      raise RuntimeError, "System copy failed (check write permissions for #{target_dir})"
+    end
+
+    true
   end
 
   def rename_and_copy(source, target = nil)

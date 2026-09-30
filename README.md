@@ -44,35 +44,35 @@ ruby copy.rb SerbiaBelgradeS3.conf wg2_ser_bel_S3.conf
 ```
 
 
-### Configuration Copier (`dir.rb`)
+### Configuration Applier (`apply.rb`)
 
-Copies downloaded VPN configuration files from your local directory into the system target folder (e.g., `/etc/amnezia/amneziawg/`). Source and target paths are defined in `config.yml`.
+Applies downloaded VPN configuration files from your local directory into the system target folder (e.g., `/etc/amnezia/amneziawg/`). Source and target paths are defined in `config.yml`.
 
 #### Usage
 ```bash
-ruby dir.rb [options]
+ruby apply.rb [options]
 ```
 
 #### Available Options
-* `-p, --period <value>` — Specifies the cutoff period for copying files.
-  * **Integer** (e.g., `0`, `3`) — Copies files modified within the last N days.
-  * `all` — Copies all available configuration files regardless of their age.
-  * *Default value:* `0` (copies today's files only).
+* `-p, --period <value>` — Specifies the cutoff period for filtering files.
+  * **Integer** (e.g., `0`, `3`) — Applies files modified within the last N days.
+  * `all` — Applies all available configuration files regardless of their age.
+  * *Default value:* `0` (applies today's files only).
 * `-h, --help` — Prints the helper banner and tool usage instructions.
 
 #### Examples
 ```bash
-# Copy only today's configurations (default)
-ruby dir.rb
+# Apply only today's configurations (default)
+ruby apply.rb
 
-# Copy configurations added/modified in the last 3 days
-ruby dir.rb -p 3
+# Apply configurations added/modified in the last 3 days
+ruby apply.rb -p 3
 
-# Copy all configuration files from the source directory
-ruby dir.rb -p all
+# Apply all configuration files from the source directory
+ruby apply.rb -p all
 
 # Show full help information
-ruby dir.rb -h
+ruby apply.rb -h
 ```
 
 
@@ -183,7 +183,7 @@ ruby ping_all.rb
 
 ## Testing Suite
 
-The project includes a robust, isolated testing infrastructure with over **70** test runs and **250+** assertions. It separates lightning-fast in-memory **unit tests** from comprehensive **integration tests** that spawn real CLI subprocesses.
+The project includes a robust, isolated testing infrastructure with over **70** test runs and **240+** assertions. It separates lightning-fast in-memory **unit tests** from comprehensive **integration tests** that spawn real CLI subprocesses.
 
 ### Running Individual Tests
 You can run any specific test file manually using the Ruby interpreter. Use the `-n` flag followed by a method name to isolate a single test case during debugging:
