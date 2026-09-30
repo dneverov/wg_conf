@@ -10,6 +10,20 @@ class VpnListerTest < UnitTestCase
     end
   end
 
+  def test_render_raises_permission_error_when_directory_is_not_readable
+    # Получаем путь к текущей тестовой директории моков
+    test_target_dir = Config.target_dir
+
+    # Мокаем File.readable? именно для этой папки
+    File.stub(:readable?, ->(dir) { dir == test_target_dir ? false : true }) do
+
+      assert_raises(Errno::EACCES) do
+        VpnLister.render
+      end
+
+    end
+  end
+
   def test_sorts_by_name_vertical_columns
     create_mock_config(TXT_MOCK_DIR, 'wg2_rus_mos.conf')
     create_mock_config(TXT_MOCK_DIR, 'wg2_chi_san.conf')
