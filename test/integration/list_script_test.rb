@@ -11,6 +11,24 @@ class ListScriptTest < IntegrationTestCase
     assert_match(/В папке конфигураций нет доступных VPN-интерфейсов/, stdout)
   end
 
+  def test_script_shows_clear_instruction_when_permissions_are_denied
+    # Передаем путь к хелперу-заглушке через флаг -r
+    helper_path = File.expand_path('mock_permissions_helper.rb', __dir__)
+
+    env = {
+      'TEST_ENV' => 'true',
+      'CONFIG_PATH' => self.class::CONFIG_FILE
+    }
+
+    # Запускаем: ruby -r ./test/integration/mock_permissions_helper.rb list.rb
+    stdout, _, status = Open3.capture3(env, 'ruby', '-r', helper_path, self.class::SCRIPT_PATH)
+
+    refute status.success?
+    assert_match(/Ошибка доступа:.*Недостаточно прав для чтения директории/, stdout)
+    assert_match(/Пожалуйста, перезапустите скрипт с правами суперпользователя/, stdout)
+    assert_match(/sudo ruby list.rb/, stdout)
+  end
+
   def test_script_shows_help
     stdout, _, status = run_script('-h')
 

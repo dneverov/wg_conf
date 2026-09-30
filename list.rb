@@ -39,6 +39,7 @@ rescue Errno::EACCES => e
   puts "Ошибка доступа: #{e.message}"
   puts "Пожалуйста, перезапустите скрипт с правами суперпользователя:"
   puts "  sudo ruby list.rb"
+  exit 1 # Код возврата при ошибке доступа
 rescue RuntimeError => e
   # Перехватываем уведомление о том, что папка пуста
   puts e.message
