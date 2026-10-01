@@ -5,8 +5,23 @@ class VpnListerTest < UnitTestCase
   setup_unit_paths 'lister'
 
   def test_returns_friendly_message_if_directory_is_empty
-    output = VpnLister.render
-    assert_match(/нет доступных VPN-интерфейсов/, output)
+    assert_raises(RuntimeError) do
+      VpnLister.render
+    end
+  end
+
+  def test_render_raises_permission_error_when_directory_is_not_readable
+    # Получаем путь к текущей тестовой директории моков
+    test_target_dir = Config.target_dir
+
+    # Мокаем File.readable? именно для этой папки
+    File.stub(:readable?, ->(dir) { dir == test_target_dir ? false : true }) do
+
+      assert_raises(Errno::EACCES) do
+        VpnLister.render
+      end
+
+    end
   end
 
   def test_sorts_by_name_vertical_columns
