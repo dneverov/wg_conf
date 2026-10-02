@@ -1,0 +1,24 @@
+PATH
+  remote: ../wg_conf_core
+  specs:
+    wg_conf_core (0.1.0)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    minitest (5.27.0)
+    minitest-rg (5.4.0)
+      minitest (>= 5.0, < 7)
+    rake (13.4.2)
+
+PLATFORMS
+  x86_64-linux
+
+DEPENDENCIES
+  minitest
+  minitest-rg
+  rake
+  wg_conf_core!
+
+BUNDLED WITH
+   2.3.26
