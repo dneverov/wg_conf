@@ -1,5 +1,5 @@
 require 'optparse'
-require_relative 'lib/vpn_runner'
+require 'wg_conf_core'
 
 # Важно: Вызываем ДО парсинга флагов с жестким перезапуском
 Config.check_root_privileges(strict: true)

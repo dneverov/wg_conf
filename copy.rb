@@ -1,4 +1,4 @@
-require_relative 'lib/copier'
+require 'wg_conf_core'
 
 Config.check_root_privileges(strict: true)
 

@@ -1,8 +1,8 @@
 require 'minitest/autorun'
+require 'minitest/rg' # Активируем классический Red/Green вывод
 require 'fileutils'
 require 'open3'
 require 'yaml'
-require_relative '../../lib/config'
 
 class IntegrationTestCase < Minitest::Test
   # Хелпер для динамического определения путей на основе имени дочернего класса
