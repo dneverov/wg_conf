@@ -19,6 +19,23 @@ You must already possess valid, working `.conf` configuration files provided by 
 
 ---
 
+## Installation & Setup
+
+1. Clone this repository to your target machine:
+   ```bash
+   git clone https://github.com/dneverov/wg_conf.git
+   cd wg_conf
+   ```
+
+2. Configure your local paths in `config.yml`.
+
+3. Install all toolset dependencies including the core gem via Bundler:
+   ```bash
+   bundle install
+   ```
+
+---
+
 ## How To Use
 
 ### Single File Copier (`copy.rb`)
