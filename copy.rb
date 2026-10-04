@@ -7,7 +7,7 @@ source_file = ARGV[0]
 target_file = ARGV[1]
 
 if source_file.nil?
-  puts "Usage: ruby copy.rb <source_file.conf> [target_file.conf]"
+  puts "Использование: ruby copy.rb <source_file.conf> [target_file.conf]"
   exit 1
 end
 
@@ -21,14 +21,14 @@ begin
     target_path = copier.set_path(copier.target_dir, final_target)
     base_name = File.basename(final_target, ".*")
 
-    puts "Done! The file has been copied to #{target_path}"
-    puts "\nTo run the new configuration:"
+    puts "Готово! Файл успешно скопирован в #{target_path}"
+    puts "\nДля запуска новой конфигурации выполните:"
     puts "  sudo systemctl start awg-quick@#{base_name}.service\n\n"
   else
-    puts "Failed to copy file. The sudo password may be incorrect."
+    puts "Ошибка: Не удалось скопировать файл. Возможно, пароль sudo введен неверно."
     exit 1
   end
 rescue ArgumentError => e
-  puts "Error: #{e.message}"
+  puts "Ошибка: #{e.message}"
   exit 1
 end
