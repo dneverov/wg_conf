@@ -1,5 +1,5 @@
 require 'optparse'
-require_relative 'lib/file_copier'
+require 'wg_conf_core'
 
 Config.check_root_privileges
 

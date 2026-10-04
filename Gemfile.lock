@@ -1,0 +1,26 @@
+GIT
+  remote: https://github.com/dneverov/wg_conf_core.git
+  revision: 79f277ca9dd87245aca50d825d383def7b04cd34
+  branch: master
+  specs:
+    wg_conf_core (0.1.0)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    minitest (5.27.0)
+    minitest-rg (5.4.0)
+      minitest (>= 5.0, < 7)
+    rake (13.4.2)
+
+PLATFORMS
+  x86_64-linux
+
+DEPENDENCIES
+  minitest
+  minitest-rg
+  rake
+  wg_conf_core!
+
+BUNDLED WITH
+   2.3.26

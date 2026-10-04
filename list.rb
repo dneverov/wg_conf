@@ -1,5 +1,5 @@
 require 'optparse'
-require_relative 'lib/vpn_lister'
+require 'wg_conf_core'
 
 # Для безопасного чтения конфигурации (например, раскрытия путей)
 Config.check_root_privileges(strict: false)

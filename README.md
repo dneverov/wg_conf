@@ -2,6 +2,8 @@
 
 A lightweight and robust CLI automation toolset for managing AmneziaWG and WireGuard configuration files. It handles structured copying, renaming, sorting, listing, and network traffic status checking.
 
+The project architecture relies on an externalized backend library [wg_conf_core](https://github.com/dneverov/wg_conf_core) to handle pure business logic, while this repository acts as the clean execution interface.
+
 ---
 
 ## Prerequisites
@@ -16,6 +18,23 @@ The system must have the active AmneziaWG kernel module and its associated CLI t
 ### 2. VPN Configuration Files
 You must already possess valid, working `.conf` configuration files provided by an AmneziaWG-compatible VPN provider.
 * Place these initial raw files into your designated local `source_dir` before starting the automation flow.
+
+---
+
+## Installation & Setup
+
+1. Clone this repository to your target machine:
+   ```bash
+   git clone https://github.com/dneverov/wg_conf.git
+   cd wg_conf
+   ```
+
+2. Configure your local paths in `config.yml`.
+
+3. Install all toolset dependencies including the core gem via Bundler:
+   ```bash
+   bundle install
+   ```
 
 ---
 
@@ -183,36 +202,14 @@ ruby ping_all.rb
 
 ## Testing Suite
 
-The project includes a robust, isolated testing infrastructure with over **70** test runs and **240+** assertions. It separates lightning-fast in-memory **unit tests** from comprehensive **integration tests** that spawn real CLI subprocesses.
-
-### Running Individual Tests
-You can run any specific test file manually using the Ruby interpreter. Use the `-n` flag followed by a method name to isolate a single test case during debugging:
-
-```bash
-# Run a specific unit test suite
-ruby test/units/namer_test.rb
-
-# Run an individual test case inside a suite
-ruby test/units/namer_test.rb -n test_country_not_in_mapping
-
-# Run a specific integration test suite
-ruby test/integration/vpn_check_script_test.rb
-```
+The project includes an isolated integration testing infrastructure running inside the Bundler environment to spawn real CLI subprocesses.
 
 ### Running with Rake (Recommended)
-Automation tasks are managed via `Rake`. The complete suite executes in just about a second and cleans up all mock file artifacts automatically.
+Integration tasks are managed via `Rake` alongside `minitest-rg` to provide clean visual test evaluations.
 
 ```bash
-# Run the entire test suite (all units and integration tests)
-rake test
-# OR simply
-rake
-
-# Run tests only from the unit directory (test/units/)
-rake test:units
-
-# Run tests only from the integration directory (test/integration/)
-rake test:integration
+# Run the integration test suite
+bundle exec rake test
 ```
 
 <!--
@@ -227,7 +224,7 @@ You can also use [awg-switch](https://github.com/dneverov/awg-switch) (Shell) to
 ## TODO
 
 - [x] Add shareable lib
-- [ ] Gemfile (if needed)
+- [x] Gemfile (if needed)
 - [x] Minitest
 - [x] Add `CopierTest`
 - [x] Read from config file (+ add config.example)

@@ -1,4 +1,4 @@
-require_relative 'lib/vpn_pinger'
+require 'wg_conf_core'
 
 Config.check_root_privileges(strict: true)
 

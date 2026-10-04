@@ -1,5 +1,5 @@
 require 'optparse'
-require_relative 'lib/vpn_inspector'
+require 'wg_conf_core'
 
 options = { verbose: false }
 
