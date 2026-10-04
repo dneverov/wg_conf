@@ -2,6 +2,8 @@
 
 A lightweight and robust CLI automation toolset for managing AmneziaWG and WireGuard configuration files. It handles structured copying, renaming, sorting, listing, and network traffic status checking.
 
+The project architecture relies on an externalized backend library [wg_conf_core](https://github.com/dneverov/wg_conf_core) to handle pure business logic, while this repository acts as the clean execution interface.
+
 ---
 
 ## Prerequisites
