@@ -1,3 +1,5 @@
+require 'bundler/setup' # Динамически инициализирует Gemfile
+
 require 'optparse'
 require 'wg_conf_core'
 

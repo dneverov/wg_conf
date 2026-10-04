@@ -1,3 +1,4 @@
+require 'bundler/setup' # Динамически инициализирует Gemfile
 require 'wg_conf_core'
 
 Config.check_root_privileges(strict: true)
