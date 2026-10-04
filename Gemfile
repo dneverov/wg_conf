@@ -1,7 +1,6 @@
 source 'https://rubygems.org'
 
-# Подключаем новое ядро из соседнего репозитория разработки
-gem 'wg_conf_core', path: '../wg_conf_core'
+gem 'wg_conf_core', git: "https://github.com/dneverov/wg_conf_core.git", branch: "master"
 
 # Зависимости для запуска и работы тестов интерфейса
 gem 'rake'
