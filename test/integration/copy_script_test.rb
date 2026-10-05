@@ -12,7 +12,7 @@ class CopyScriptTest < IntegrationTestCase
     stdout, _, status = run_script # Запуск без аргументов
 
     refute status.success?
-    assert_match(/Usage: ruby copy.rb/, stdout)
+    assert_match(/Использование: ruby copy.rb/, stdout)
   end
 
   def test_script_copies_file_with_auto_renaming
@@ -23,7 +23,7 @@ class CopyScriptTest < IntegrationTestCase
     stdout, _, status = run_script('ChileSantiago.conf')
 
     assert status.success?
-    assert_match(/Done! The file has been copied to/, stdout)
+    assert_match(/Готово! Файл успешно скопирован в/, stdout)
     assert_match(/sudo systemctl start awg-quick@wg2_chi_san.service/, stdout)
 
     # Проверяем, что файл физически скопировался в целевую папку и переименовался через Namer
@@ -37,7 +37,7 @@ class CopyScriptTest < IntegrationTestCase
     stdout, _, status = run_script('ChileSantiago.conf', 'custom_chile.conf')
 
     assert status.success?
-    assert_match(/Done! The file has been copied to.*custom_chile.conf/, stdout)
+    assert_match(/Готово! Файл успешно скопирован в.*custom_chile.conf/, stdout)
 
     # Файл должен создаться строго с тем именем, которое мы передали вручную
     assert File.exist?(File.join(TXT_MOCK_DIR, 'custom_chile.conf'))
