@@ -73,6 +73,43 @@ class VpnRunScriptTest < IntegrationTestCase
     assert_match(/\[EXEC\] awg show wg2_chi_san/, stdout)
   end
 
+  def test_script_enables_kill_switch_with_flag_k
+    # Создаем фейковый WireGuard файл, но теперь с секцией Endpoint, чтобы parser не упал
+    conf_content = <<~CONF
+      [Interface]
+      Address = 10.0.0.2/24
+      [Peer]
+      Endpoint = 198.51.100.42:51820
+    CONF
+    create_mock_config('wg2_chi_san.conf', conf_content)
+
+    # Запускаем с новым флагом защиты -k
+    stdout, _, status = run_script("-k")
+
+    assert status.success?
+    assert_match(/VPN успешно запущен!/, stdout)
+    assert_match(/Активация Kill Switch для сервера 198.51.100.42.../, stdout)
+
+    # Проверяем, что наша безопасная обертка зафиксировала вызовы iptables в правильном порядке
+    assert_match(/\[EXEC\] iptables -N WG_KILL_SWITCH/, stdout)
+    assert_match(/\[EXEC\] iptables -I OUTPUT -j WG_KILL_SWITCH/, stdout)
+    assert_match(/\[EXEC\] iptables -A WG_KILL_SWITCH -o wg2_chi_san -j ACCEPT/, stdout)
+    assert_match(/\[EXEC\] iptables -A WG_KILL_SWITCH -j DROP/, stdout)
+  end
+
+  def test_script_cleans_firewall_rules_on_stop
+    # Запускаем штатную остановку с флагом -s
+    stdout, _, status = run_script("-s")
+
+    assert status.success?
+    assert_match(/Остановка всех VPN соединений и сброс правил файрвола.../, stdout)
+
+    # Проверяем, что система выполнила полную очистку таблиц сетевого фильтра
+    assert_match(/\[EXEC\] iptables -D OUTPUT -j WG_KILL_SWITCH/, stdout)
+    assert_match(/\[EXEC\] iptables -F WG_KILL_SWITCH/, stdout)
+    assert_match(/\[EXEC\] iptables -X WG_KILL_SWITCH/, stdout)
+  end
+
   private
 
     # Проксируем вызов в базовый класс
