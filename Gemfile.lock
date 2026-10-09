@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/dneverov/wg_conf_core.git
-  revision: 79f277ca9dd87245aca50d825d383def7b04cd34
+  revision: f1b06bbb30c0804c7c788acee17fd4f1a82f0da5
   branch: master
   specs:
     wg_conf_core (0.1.0)
