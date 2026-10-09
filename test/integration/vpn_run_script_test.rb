@@ -16,7 +16,7 @@ class VpnRunScriptTest < IntegrationTestCase
     stdout, _, status = run_script("-s")
 
     assert status.success?
-    assert_match(/Сброс старых подключений.../, stdout)
+    assert_match(/Остановка всех VPN соединений и сброс правил файрвола.../, stdout)
     # Проверяем, что наша безопасная обертка [EXEC] вывела правильную команду systemctl
     assert_match(/\[EXEC\] systemctl stop 'awg-quick@\*'/, stdout)
 
