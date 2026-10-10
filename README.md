@@ -128,7 +128,7 @@ ruby list.rb -h
 
 ### VPN Connection Manager (`vpn_run.rb`)
 
-Manages your AmneziaWG/WireGuard connections using configuration files from the system target directory. It handles stopping previous connections, dynamic configuration resolution, interface diagnostics, and automatically requests `sudo` privileges if launched by a regular user.
+Manages your AmneziaWG/WireGuard connections using configuration files from the system target directory. It handles stopping previous connections, dynamic configuration resolution, interface diagnostics, features an integrated **Kill Switch** to prevent unencrypted traffic leaks, and automatically requests `sudo` privileges if launched by a regular user.
 
 #### Usage
 ```bash
@@ -139,7 +139,9 @@ ruby vpn_run.rb [options] [config_name]
 * `[config_name]` — **Optional**. The name of a specific VPN configuration file (without the `.conf` extension) to start. If omitted, the script automatically detects and starts the **latest (most recently modified)** configuration file in the directory.
 
 #### Available Options
-* `-s, --stop` — Stops all currently active systemd units matching your project's VPN service prefix, resetting all connections.
+* `-s, --stop` — Stops all currently active systemd units matching your project's VPN service prefix and cleanly flushes all Kill Switch firewall rules, restoring pristine network states.
+* `-i, --status` — Explicitly prints the live interface diagnostic summary map right after the connection is established.
+* `-k, --kill-switch` — Activates strict `iptables-nft` protection. Automatically blocks all outbound system traffic except for the active VPN tunnel loop and the target server's endpoint IP.
 * `-h, --help` — Prints the helper banner and tool usage instructions.
 
 #### Examples
@@ -147,10 +149,13 @@ ruby vpn_run.rb [options] [config_name]
 # Start the most recent configuration file (auto-escalates to sudo if needed)
 ruby vpn_run.rb
 
-# Start a specific configuration interface explicitly
-ruby vpn_run.rb wg2_net_ams_H16
+# Start a specific configuration interface explicitly and display status diagnostics
+ruby vpn_run.rb -i wg2_net_ams_H16
 
-# Stop all active VPN connections and clean up routing tables
+# Securely launch a tunnel with full traffic leak protection (Kill Switch active)
+ruby vpn_run.rb -k
+
+# Stop active connections and safely restore network and firewall states
 ruby vpn_run.rb -s
 
 # Show help information
