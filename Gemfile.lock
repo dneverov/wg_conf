@@ -1,9 +1,9 @@
 GIT
   remote: https://github.com/dneverov/wg_conf_core.git
-  revision: f1b06bbb30c0804c7c788acee17fd4f1a82f0da5
+  revision: 48a3c51e4426cf22c3b54ddc4a35ff92d99fc42b
   branch: master
   specs:
-    wg_conf_core (0.1.0)
+    wg_conf_core (0.2.0)
 
 GEM
   remote: https://rubygems.org/
